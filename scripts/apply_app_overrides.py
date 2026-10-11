@@ -48,6 +48,7 @@ NEW_FILES = (
     Path("com/winlator/optimization/SettingsOverviewUI.java"),
     Path("com/winlator/optimization/WineImportPolicy.java"),
     Path("com/winlator/optimization/WineImportDiagnostics.java"),
+    Path("com/winlator/optimization/RuntimeDiagnostics.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
