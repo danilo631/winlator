@@ -11,6 +11,7 @@ Run after 'git submodule update --init --recursive'.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,7 @@ FRAME_RATING_FILE = Path("com/winlator/widget/FrameRating.java")
 DXVK_CONFIG_FILE = Path("com/winlator/contentdialog/DXVKConfigDialog.java")
 GUEST_LAUNCHER_FILE = Path("com/winlator/xenvironment/components/GuestProgramLauncherComponent.java")
 WINE_INSTALLER_FILE = Path("com/winlator/core/WineInstaller.java")
+CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -34,6 +36,8 @@ NEW_FILES = (
     Path("com/winlator/optimization/ConfigFilePolicy.java"),
     Path("com/winlator/optimization/FexWineRuntime.java"),
     Path("com/winlator/optimization/RuntimeBackendUI.java"),
+    Path("com/winlator/optimization/EnhancedLibraryUI.java"),
+    Path("com/winlator/optimization/LibraryFilter.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -288,6 +292,80 @@ def transform_wine_installer(src: str) -> str:
     )
     return src
 
+
+# Upstream git-blob SHA-1s from pinned Winlator 11.2 submodule.
+# Entire existing layout files are replaced only if still identical to upstream.
+RES_OVERLAY = ROOT / "overrides" / "app" / "src" / "main" / "res"
+RESOURCE_REPLACEMENTS = {
+    Path("layout/containers_fragment.xml"): "a954448ded0799501fb9a6f0de1aa1dad5fb9525",
+    Path("layout/container_list_item.xml"): "6c94be0b2f5b1ddb5d9eca029ecd9da63588e42e",
+}
+RESOURCE_ADDITIONS = (
+    Path("drawable/enhanced_hero.xml"),
+    Path("drawable/enhanced_library_card.xml"),
+    Path("drawable/enhanced_play_button.xml"),
+    Path("drawable/enhanced_icon_tile.xml"),
+    Path("drawable/enhanced_search_field.xml"),
+)
+
+def git_blob_sha(content: bytes) -> str:
+    header = b"blob " + str(len(content)).encode("ascii") + b"\0"
+    return hashlib.sha1(header + content).hexdigest()
+
+def transform_containers_list(src: str) -> str:
+    src = replace_once(
+        src,
+        "import android.view.LayoutInflater;\n",
+        "import android.view.LayoutInflater;\n"
+        "import android.text.Editable;\n"
+        "import android.text.TextWatcher;\n"
+        "import android.widget.EditText;\n"
+        "import com.winlator.optimization.LibraryFilter;\n"
+        "import com.winlator.optimization.EnhancedLibraryUI;\n",
+        "ContainersFragment new UI imports",
+    )
+    src = replace_once(
+        src,
+        "        DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);\n"
+        "        itemDecoration.setDrawable(ContextCompat.getDrawable(context, R.drawable.list_item_divider));\n"
+        "        recyclerView.addItemDecoration(itemDecoration);\n",
+        "        EditText search = frameLayout.findViewById(R.id.ETSearchContainers);\n"
+        "        search.addTextChangedListener(new TextWatcher() {\n"
+        "            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}\n"
+        "            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {\n"
+        "                if (manager != null) loadContainersList();\n"
+        "            }\n"
+        "            @Override public void afterTextChanged(Editable e) {}\n"
+        "        });\n",
+        "ContainersFragment library filter",
+    )
+    src = replace_once(
+        src,
+        "        ArrayList<Container> containers = manager.getContainers();\n"
+        "        recyclerView.setAdapter(new ContainersAdapter(containers));\n"
+        "        if (containers.isEmpty()) emptyTextView.setVisibility(View.VISIBLE);\n",
+        "        ArrayList<Container> all = manager.getContainers();\n"
+        "        ArrayList<Container> filtered = new ArrayList<>();\n"
+        "        String query = ((EditText)requireView().findViewById(R.id.ETSearchContainers)).getText().toString();\n"
+        "        for (Container container : all) {\n"
+        "            if (LibraryFilter.matches(query, container.getName(), container.getScreenSize(),\n"
+        "                    container.getGraphicsDriver(), container.getWineVersion(),\n"
+        "                    container.getDXWrapper(), container.getEnvVars())) filtered.add(container);\n"
+        "        }\n"
+        "        recyclerView.setAdapter(new ContainersAdapter(filtered));\n"
+        "        emptyTextView.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);\n"
+        "        EnhancedLibraryUI.summary(requireView(), filtered.size(), all.size());\n",
+        "ContainersFragment state / search",
+    )
+    src = replace_once(
+        src,
+        "            holder.title.setText(item.getName());\n",
+        "            holder.title.setText(item.getName());\n"
+        "            EnhancedLibraryUI.bindContainer(holder.itemView, item);\n",
+        "ContainersFragment card metadata",
+    )
+    return src
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate without modifying files")
@@ -304,6 +382,7 @@ def main() -> int:
         DXVK_CONFIG_FILE: transform_dxvk_config,
         GUEST_LAUNCHER_FILE: transform_guest_launcher,
         WINE_INSTALLER_FILE: transform_wine_installer,
+        CONTAINERS_FILE: transform_containers_list,
     }
     outputs = {}
 
@@ -324,6 +403,28 @@ def main() -> int:
         if dest.is_file() and dest.read_text(encoding="utf-8") != contents:
             raise RuntimeError(f"will not overwrite a different upstream file: {dest}")
         outputs[dest] = contents
+
+    # Resource overlays: exact pinned upstream for existing layouts, no clobber of other files.
+    res_dest = APP / "app" / "src" / "main" / "res"
+    for relative, pinned_sha in RESOURCE_REPLACEMENTS.items():
+        source = RES_OVERLAY / relative
+        dest = res_dest / relative
+        if not source.is_file() or not dest.is_file():
+            raise RuntimeError(f"Missing resource overlay or upstream resource: {relative}")
+        data = dest.read_bytes()
+        new_data = source.read_bytes()
+        if data != new_data and git_blob_sha(data) != pinned_sha:
+            raise RuntimeError(f"Upstream XML changed: {relative} (refusing to overwrite)")
+        outputs[dest] = new_data.decode("utf-8")
+    for relative in RESOURCE_ADDITIONS:
+        source = RES_OVERLAY / relative
+        dest = res_dest / relative
+        if not source.is_file():
+            raise RuntimeError(f"Missing new drawable overlay: {relative}")
+        content = source.read_text(encoding="utf-8")
+        if dest.exists() and dest.read_text(encoding="utf-8") != content:
+            raise RuntimeError(f"Conflicting new drawable: {relative}")
+        outputs[dest] = content
 
     if args.check:
         print(f"OK: validated {len(outputs)} Winlator app overrides")
