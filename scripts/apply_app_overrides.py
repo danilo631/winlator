@@ -534,6 +534,7 @@ def transform_settings_fragment(src: str) -> str:
         '                if (wineDir != null) {\n'
         '                    String reason = WineImportDiagnostics.inspectExtracted(wineDir);\n'
         '                    if (reason != null) {\n'
+        '                        FileUtils.delete(wineDir);\n'
         '                        preloaderDialog.closeOnUiThread();\n'
         '                        getActivity().runOnUiThread(() -> new android.app.AlertDialog.Builder(context)\n'
         '                            .setTitle("Wine incompatível")\n'
