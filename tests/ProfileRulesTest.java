@@ -34,6 +34,13 @@ public final class ProfileRulesTest {
         expect("fps,frametimes".equals(vars.get("DXVK_HUD")), "diagnostic HUD");
         ProfileRules.apply(ProfileRules.DXVK_HUD_OFF, vars);
         expect(!vars.containsKey("DXVK_HUD"), "diagnostic rollback");
+        expect(ProfileRules.apply(ProfileRules.BOX64_CACHE_ON, vars) == null, "jit cache preset unchanged");
+        expect("1".equals(vars.get("BOX64_DYNACACHE")), "cache enabled");
+        expect("512".equals(vars.get("BOX64_DYNACACHE_LIMIT")), "cache cap in MiB");
+        ProfileRules.apply(ProfileRules.BOX64_CACHE_OFF, vars);
+        expect("0".equals(vars.get("BOX64_DYNACACHE")), "cache disabled");
+        expect(!vars.containsKey("BOX64_DYNACACHE_LIMIT"), "cache limit removed");
+
 
         ProfileRules.apply(ProfileRules.BALANCED, vars);
         expect("INTERMEDIATE".equals(ProfileRules.apply(ProfileRules.BALANCED, vars)),
