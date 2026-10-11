@@ -22,6 +22,12 @@ Outro problema relatado foi o gerenciador Wine não aparecer. A versão anterior
 
 **Compatibilidade de execução não é igual à compatibilidade de arquivo**. O importador pode ler um pacote `.wcp.xz`, mas isso não significa que seu `wine` possa ser executado no rootfs. Proton Wine Bionic exige um ambiente de execução adequado, bibliotecas Bionic/Unix correspondentes, configuração Wineprefix e, para ARM64EC, FEXCore. O pacote `Proton-Wine-ARM64EC-FEXCore-Winlator` gerado pela CI da fase anterior também não foi testado em aparelho real e **não é oficialmente funcional**. Usar Wine Linux/glibc destinado ao Winlator 11.2 é o caminho seguro no momento.
 
+## Nova fonte aberta para Wine e Proton Linux
+
+Foi adicionado no gerenciador o botão **Wine / Proton Linux (Box64)**, que abre os releases de [Kron4ek/Wine-Builds](https://github.com/Kron4ek/Wine-Builds/releases). O projeto publica builds Wine Vanilla, Staging, TkG e Wine com patches Proton para Linux AMD64, incluindo variantes WoW64. Elas são uma opção tecnicamente mais próxima do Wine Linux/glibc esperado pelo Box64 do Winlator original do que os pacotes Android/Bionic do GameNative.
+
+**Não é uma garantia de compatibilidade.** Mesmo sendo Linux AMD64, a build pode depender de bibliotecas, versões glibc ou diretórios que não existem no rootfs do Winlator. O importador deve testar `wine --version`, e o usuário deve experimentar apenas em contêiner novo. O nome *Proton* aqui se refere ao Wine com patches Proton, não a uma instalação do Steam Proton completo.
+
 ## Interface mais discreta
 
 A Biblioteca exibe uma lista simples em fundo grafite, busca e atalho para gerenciar Wine. O gerenciador mostra primeiro as versões instaladas, depois importação, pacotes de teste e criação de contêineres. Foram retirados gradientes fortes, slogans e cartões desnecessários; preservaram-se IDs, navegação e as configurações originais de jogos.
