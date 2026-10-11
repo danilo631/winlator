@@ -265,6 +265,14 @@ def transform_wine_installer(src: str) -> str:
     )
     src = replace_once(
         src,
+        '        String wineBinPath = wineBin64.isFile() ? wineBin64.getPath() : wineBin.getPath();\n',
+        '        String wineBinPath = FexWineRuntime.isNativeAndroidArm64(wineBin)\n'
+        '            ? wineBin.getPath()\n'
+        '            : (wineBin64.isFile() ? wineBin64.getPath() : wineBin.getPath());\n',
+        "WineInstaller native arm64 binary preference",
+    )
+    src = replace_once(
+        src,
         '        guestProgramLauncherComponent.setGuestExecutable(wineBinPath+" --version");\n',
         '        guestProgramLauncherComponent.setGuestExecutable(wineBinPath+" --version");\n'
         '        if (FexWineRuntime.isNativeAndroidArm64(wineBin)) {\n'
