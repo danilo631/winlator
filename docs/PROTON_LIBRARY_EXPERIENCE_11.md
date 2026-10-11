@@ -28,7 +28,29 @@ No Winlator Enhanced, vá a **Configurações → Wine → Proton Wine 11 • ve
 3. Use **Proton Wine: sincronização e compatibilidade** para testar `automatic`, `userspace NTsync`, `disable NTsync` ou `ESYNC`. Salve o contêiner. Opções NTsync específicas só funcionam quando implementadas no Wine Proton instalado.
 4. Compare tempos de inicialização, FPS/frametimes e estabilidade. Desfaça um ajuste isoladamente em caso de regressão.
 
-### Segurança e desempenho
+#
+## Combinar Proton Wine ARM64EC e FEXCore automaticamente (no computador)
+
+A etapa 3 já disponibiliza módulos FEXCore compilados no GitHub Actions. Agora a ferramenta `scripts/assemble_fex_proton.py` combina arquivos reais:
+
+- **Entrada Wine:** `proton-wine-11.0-2-arm64ec.wcp.xz` (Wine Type, formato tar.xz) do release oficial GameNative.
+- **Entrada FEX:** `FEXCore-2609-ARM64EC-modules.tar.xz`, extraído do artefato do build FEXCore da etapa 3.
+- **Saída:** `proton-fex-winlator.tar.xz` e `proton-fex-winlator.tar.xz.sha256`, prontos para tentativa de importação no instalador Wine do Winlator Enhanced.
+
+Com Python 3.10+ no computador:
+
+```bash
+python3 scripts/assemble_fex_proton.py \
+  --wine proton-wine-11.0-2-arm64ec.wcp.xz \
+  --fex FEXCore-2609-ARM64EC-modules.tar.xz \
+  --output proton-fex-winlator.tar.xz
+```
+
+O montador verifica cabeçalho ELF64/AArch64 **com interpretador Bionic Android**, assinatura PE das DLLs, presença dos dois módulos FEX e segurança dos caminhos dos arquivos TAR. Preserva os demais componentes originais do Wine, substitui os módulos FEX na árvore e calcula SHA-256. Rejeita Linux/glibc, arquivos incompatíveis e tentativas de escapamento do arquivo compactado.
+
+**Atenção:** módulos FEXCore PE compilados separadamente **precisam ser compatíveis com o Wine ARM64EC escolhido**. A montagem não cria as bibliotecas Unix do FEX/Proton nem resolve automaticamente diferenças de ABI, Wineprefix e drivers. Por isso o resultado é um **pacote de integração experimental**, não uma confirmação de jogos funcionando.
+
+## Segurança e desempenho
 
 - Não altera clocks/governor nem desativa proteção térmica.
 - Não injeta arquivos proprietários GameHub nem componentes fechados.
