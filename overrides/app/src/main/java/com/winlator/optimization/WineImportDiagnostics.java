@@ -23,7 +23,14 @@ public final class WineImportDiagnostics {
         try (InputStream in = context.getContentResolver().openInputStream(uri)) {
             if (in == null) { fail("Não foi possível abrir o arquivo selecionado."); return null; }
             byte[] bytes = new byte[6];
-            if (in.read(bytes) != 6) {
+            int read = 0;
+            while (read < bytes.length) {
+                int n = in.read(bytes, read, bytes.length - read);
+                if (n < 0) break;
+                if (n == 0) break;
+                read += n;
+            }
+            if (read != bytes.length) {
                 fail("Arquivo vazio ou incompleto.");
                 return null;
             }
