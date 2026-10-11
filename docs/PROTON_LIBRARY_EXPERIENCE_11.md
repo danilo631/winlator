@@ -50,6 +50,17 @@ O montador verifica cabeçalho ELF64/AArch64 **com interpretador Bionic Android*
 
 **Atenção:** módulos FEXCore PE compilados separadamente **precisam ser compatíveis com o Wine ARM64EC escolhido**. A montagem não cria as bibliotecas Unix do FEX/Proton nem resolve automaticamente diferenças de ABI, Wineprefix e drivers. Por isso o resultado é um **pacote de integração experimental**, não uma confirmação de jogos funcionando.
 
+
+### Sem computador: montar diretamente pelo GitHub Actions
+
+O workflow **Bundle ARM64EC Proton Wine + FEXCore** (`.github/workflows/proton-fex-bundle.yml`) faz a montagem automaticamente: baixa o release oficial Proton Wine ARM64EC do GameNative, localiza o último build bem-sucedido das DLLs FEXCore na mesma conta/repositório, verifica ELF/PE e segurança do TAR, monta o pacote e calcula SHA-256. Ele não instala nada no seu Android e não modifica o aplicativo.
+
+Abra a aba **Actions** do seu fork, escolha **Bundle ARM64EC Proton Wine + FEXCore**, clique em **Run workflow** e selecione a branch `feature/launcher-proton-experience-11`. Após uma execução **bem-sucedida**, procure em **Artifacts** o arquivo `Proton-Wine-ARM64EC-FEXCore-Winlator`. Extraia seu ZIP e use o `.tar.xz` dentro dele no instalador Wine.
+
+A execução usa o tag Proton Wine `proton-11.0-2-20261010` e o asset `proton-wine-11.0-2-arm64ec.wcp.xz` por padrão; ambos podem ser informados manualmente. O artefato das DLLs FEXCore precisa estar disponível e não expirado (retenção atual de 14 dias). A montagem pode falhar caso a estrutura da distribuição de terceiros mude, contenha symlinks inseguros, não traga o interpretador Android esperado ou não seja compatível com essa combinação de módulos.
+
+**Crítico:** mesmo um build e uma importação bem-sucedidos não comprovam que Wine ARM64EC e FEXCore funcionarão sobre o rootfs do Winlator 11.2. Não remova seu contêiner Box64, faça backup e teste a nova combinação em um contêiner separado.
+
 ## Segurança e desempenho
 
 - Não altera clocks/governor nem desativa proteção térmica.
