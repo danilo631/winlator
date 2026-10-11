@@ -28,6 +28,11 @@ on:
 permissions:
   contents: read
 
+# Keep only the newest APK build per branch/PR when multiple UI/docs commits land.
+concurrency:
+  group: winlator-enhanced-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     name: Verify overlays and Java profile rules
