@@ -28,6 +28,7 @@ GUEST_LAUNCHER_FILE = Path("com/winlator/xenvironment/components/GuestProgramLau
 WINE_INSTALLER_FILE = Path("com/winlator/core/WineInstaller.java")
 CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
 SETTINGS_FILE = Path("com/winlator/SettingsFragment.java")
+MAIN_ACTIVITY_FILE = Path("com/winlator/MainActivity.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -42,6 +43,7 @@ NEW_FILES = (
     Path("com/winlator/optimization/ProtonSyncRules.java"),
     Path("com/winlator/optimization/ProtonTuningUI.java"),
     Path("com/winlator/optimization/ProtonSourcesUI.java"),
+    Path("com/winlator/optimization/RuntimeCenterFragment.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -316,6 +318,7 @@ RES_OVERLAY = ROOT / "overrides" / "app" / "src" / "main" / "res"
 RESOURCE_REPLACEMENTS = {
     Path("layout/containers_fragment.xml"): "a954448ded0799501fb9a6f0de1aa1dad5fb9525",
     Path("layout/container_list_item.xml"): "6c94be0b2f5b1ddb5d9eca029ecd9da63588e42e",
+    Path("menu/main_menu.xml"): "40a7b19766d480e435db50acf52197ef8d6a2b09",
 }
 RESOURCE_ADDITIONS = (
     Path("drawable/enhanced_hero.xml"),
@@ -323,6 +326,7 @@ RESOURCE_ADDITIONS = (
     Path("drawable/enhanced_play_button.xml"),
     Path("drawable/enhanced_icon_tile.xml"),
     Path("drawable/enhanced_search_field.xml"),
+    Path("layout/runtime_center_fragment.xml"),
 )
 
 def git_blob_sha(content: bytes) -> str:
@@ -399,7 +403,64 @@ def transform_settings_fragment(src: str) -> str:
         "        ProtonSourcesUI.attach(context, view);\n",
         "SettingsFragment Proton source / import button",
     )
+    # The stock release leaves Wine installation hidden unless DEBUG_MODE.
+    # This is the reason the Proton install controls were not visible.
+    src = replace_once(
+        src,
+        '        if (MainActivity.DEBUG_MODE) {\n'
+        '            view.findViewById(R.id.LLWineInstallation).setVisibility(View.VISIBLE);\n'
+        '        }\n',
+        '        view.findViewById(R.id.LLWineInstallation).setVisibility(View.VISIBLE);\n',
+        "SettingsFragment always reveal Wine installation controls",
+    )
+    src = replace_once(
+        src,
+        '        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(R.string.settings);\n',
+        '        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(R.string.settings);\n'
+        '        Bundle args = getArguments();\n'
+        '        if (args != null) {\n'
+        '            boolean importWine = args.getBoolean("winlator_open_wine_import", false);\n'
+        '            boolean focusWine = args.getBoolean("winlator_focus_wine", false);\n'
+        '            if (importWine && savedInstanceState == null)\n'
+        '                view.post(() -> { if (isAdded()) selectWineFileForInstall(); });\n'
+        '            else if (focusWine) {\n'
+        '                View wine = view.findViewById(R.id.LLWineInstallation);\n'
+        '                view.post(() -> { if (isAdded() && wine != null) {\n'
+        '                    wine.requestFocus();\n'
+        '                    wine.requestRectangleOnScreen(\n'
+        '                        new android.graphics.Rect(0, 0, wine.getWidth(), wine.getHeight()), true);\n'
+        '                }});\n'
+        '            }\n'
+        '        }\n',
+        "SettingsFragment deep link: import Wine or focus Wine settings",
+    )
     return src
+
+
+def transform_main_activity(src: str) -> str:
+    src = replace_once(
+        src,
+        "import com.winlator.contentdialog.AboutDialog;\n",
+        "import com.winlator.contentdialog.AboutDialog;\n"
+        "import com.winlator.optimization.RuntimeCenterFragment;\n",
+        "MainActivity Wine runtime menu import",
+    )
+    src = replace_once(
+        src,
+        '            case R.id.menu_item_settings:\n'
+        '                showFragment(new SettingsFragment());\n'
+        '                break;\n',
+        '            case R.id.menu_item_runtime_center:\n'
+        '                showFragment(new RuntimeCenterFragment());\n'
+        '                break;\n'
+        '            case R.id.menu_item_settings:\n'
+        '                showFragment(new SettingsFragment());\n'
+        '                break;\n',
+        "MainActivity Wine runtime menu navigation",
+    )
+    return src
+
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -419,6 +480,7 @@ def main() -> int:
         WINE_INSTALLER_FILE: transform_wine_installer,
         CONTAINERS_FILE: transform_containers_list,
         SETTINGS_FILE: transform_settings_fragment,
+        MAIN_ACTIVITY_FILE: transform_main_activity,
     }
     outputs = {}
 
