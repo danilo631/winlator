@@ -23,6 +23,8 @@ CONTAINER_FILE = Path("com/winlator/ContainerDetailFragment.java")
 SHORTCUT_FILE = Path("com/winlator/contentdialog/ShortcutSettingsDialog.java")
 FRAME_RATING_FILE = Path("com/winlator/widget/FrameRating.java")
 DXVK_CONFIG_FILE = Path("com/winlator/contentdialog/DXVKConfigDialog.java")
+GUEST_LAUNCHER_FILE = Path("com/winlator/xenvironment/components/GuestProgramLauncherComponent.java")
+WINE_INSTALLER_FILE = Path("com/winlator/core/WineInstaller.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -30,6 +32,8 @@ NEW_FILES = (
     Path("com/winlator/optimization/FrameTimeTracker.java"),
     Path("com/winlator/optimization/ThermalAdvisor.java"),
     Path("com/winlator/optimization/ConfigFilePolicy.java"),
+    Path("com/winlator/optimization/FexWineRuntime.java"),
+    Path("com/winlator/optimization/RuntimeBackendUI.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -61,7 +65,8 @@ def transform_container(src: str) -> str:
         "import com.winlator.core.EnvVars;\n"
         "import com.winlator.core.GPUHelper;\n"
         "import com.winlator.optimization.ProfileRules;\n"
-        "import com.winlator.optimization.GameProfileUI;\n",
+        "import com.winlator.optimization.GameProfileUI;\n"
+        "import com.winlator.optimization.RuntimeBackendUI;\n",
         "ContainerDetailFragment imports",
     )
     src = replace_once(
@@ -69,7 +74,8 @@ def transform_container(src: str) -> str:
         "        final EnvVarsView envVarsView = createEnvVarsTab(view);\n",
         "        final EnvVarsView envVarsView = createEnvVarsTab(view);\n"
         "        GameProfileUI.attach(context, view.findViewById(R.id.LLTabEnvVars),\n"
-        "            envVarsView, sBox64Preset);\n",
+        "            envVarsView, sBox64Preset);\n"
+        "        RuntimeBackendUI.attach(context, view.findViewById(R.id.LLTabEnvVars), envVarsView);\n",
         "ContainerDetailFragment profile control",
     )
     src = replace_once(
@@ -87,7 +93,8 @@ def transform_shortcut(src: str) -> str:
     src = replace_once(
         src, "import com.winlator.core.EnvVars;\n",
         "import com.winlator.core.EnvVars;\n"
-        "import com.winlator.optimization.GameProfileUI;\n",
+        "import com.winlator.optimization.GameProfileUI;\n"
+        "import com.winlator.optimization.RuntimeBackendUI;\n",
         "ShortcutSettingsDialog import",
     )
     src = replace_once(
@@ -95,7 +102,8 @@ def transform_shortcut(src: str) -> str:
         "        final EnvVarsView envVarsView = createEnvVarsTab();\n",
         "        final EnvVarsView envVarsView = createEnvVarsTab();\n"
         "        GameProfileUI.attach(context, findViewById(R.id.LLTabEnvVars),\n"
-        "            envVarsView, sBox64Preset);\n",
+        "            envVarsView, sBox64Preset);\n"
+        "        RuntimeBackendUI.attach(context, findViewById(R.id.LLTabEnvVars), envVarsView);\n",
         "ShortcutSettingsDialog profile control",
     )
     return src
@@ -163,6 +171,115 @@ def transform_dxvk_config(src: str) -> str:
     )
     return src
 
+
+def transform_guest_launcher(src: str) -> str:
+    src = replace_once(
+        src, "import com.winlator.box64.Box64Preset;\n",
+        "import com.winlator.box64.Box64Preset;\n"
+        "import com.winlator.optimization.FexWineRuntime;\n"
+        "import android.os.Handler;\n"
+        "import android.os.Looper;\n"
+        "import android.widget.Toast;\n",
+        "GuestProgramLauncher import",
+    )
+    src = replace_once(
+        src, "    private String box64Preset = Box64Preset.CONSERVATIVE;\n",
+        "    private String box64Preset = Box64Preset.CONSERVATIVE;\n"
+        "    private String executionBackend = FexWineRuntime.BACKEND_BOX64;\n",
+        "GuestProgramLauncher backend member",
+    )
+    src = replace_once(
+        src, "            extractBox64File();\n            copyDefaultBox64RCFile();\n",
+        "            if (!isFexCoreSelected()) {\n"
+        "                extractBox64File();\n"
+        "                copyDefaultBox64RCFile();\n"
+        "            }\n",
+        "GuestProgramLauncher Box64 only extraction",
+    )
+    src = replace_once(
+        src, "    private int execGuestProgram() {\n",
+        "    public void setExecutionBackend(String backend) {\n"
+        "        this.executionBackend = backend;\n"
+        "    }\n\n"
+        "    private boolean isFexCoreSelected() {\n"
+        "        return FexWineRuntime.BACKEND_FEXCORE.equals(executionBackend)\n"
+        "            || (this.envVars != null && FexWineRuntime.BACKEND_FEXCORE.equals(\n"
+        "                this.envVars.get(FexWineRuntime.ENV_BACKEND)));\n"
+        "    }\n\n"
+        "    private int execGuestProgram() {\n",
+        "GuestProgramLauncher backend selector",
+    )
+    src = replace_once(
+        src, '        addBox64EnvVars(envVars);\n',
+        '        final boolean nativeFex = isFexCoreSelected();\n'
+        '        if (!nativeFex) addBox64EnvVars(envVars);\n',
+        "GuestProgramLauncher config setup",
+    )
+    src = replace_once(
+        src, '        if (this.envVars != null) envVars.putAll(this.envVars);\n',
+        '        if (this.envVars != null) envVars.putAll(this.envVars);\n'
+        '        envVars.remove(FexWineRuntime.ENV_BACKEND);\n',
+        "GuestProgramLauncher hide internal selector from guest",
+    )
+    src = replace_once(
+        src,
+        '        String command = rootDir+"/usr/local/bin/box64 "+guestExecutable;\n',
+        '        String command;\n'
+        '        if (nativeFex) {\n'
+        '            File wineDir = new File(rootDir.toString()+rootFS.getWinePath());\n'
+        '            String error = FexWineRuntime.check(wineDir);\n'
+        '            if (error == null) {\n'
+        '                try { command = FexWineRuntime.nativeWineCommand(guestExecutable, wineDir); }\n'
+        '                catch (IllegalArgumentException failure) { error = failure.getMessage(); command = ""; }\n'
+        '            }\n'
+        '            else command = "";\n'
+        '            if (error != null) {\n'
+        '                final String reason = error;\n'
+        '                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(\n'
+        '                    environment.getContext(), "FEXCore unavailable: "+reason,\n'
+        '                    Toast.LENGTH_LONG).show());\n'
+        '                if (terminationCallback != null) terminationCallback.call(127);\n'
+        '                return -1;\n'
+        '            }\n'
+        '        }\n'
+        '        else command = rootDir+"/usr/local/bin/box64 "+guestExecutable;\n',
+        "GuestProgramLauncher real native ARM64EC branch",
+    )
+    return src
+
+def transform_wine_installer(src: str) -> str:
+    src = replace_once(
+        src,
+        'import com.winlator.MainActivity;\n',
+        'import com.winlator.MainActivity;\n'
+        'import com.winlator.optimization.FexWineRuntime;\n',
+        "WineInstaller preflight import",
+    )
+    src = replace_once(
+        src,
+        '        guestProgramLauncherComponent.setBox64Preset(Box64Preset.STABILITY);\n',
+        '        guestProgramLauncherComponent.setBox64Preset(Box64Preset.STABILITY);\n'
+        '        if (FexWineRuntime.ready(new File(rootDir.toString()+rootFS.getWinePath())))\n'
+        '            guestProgramLauncherComponent.setExecutionBackend(FexWineRuntime.BACKEND_FEXCORE);\n',
+        "WineInstaller native prefix initialization",
+    )
+    src = replace_once(
+        src,
+        '        guestProgramLauncherComponent.setGuestExecutable(wineBinPath+" --version");\n',
+        '        guestProgramLauncherComponent.setGuestExecutable(wineBinPath+" --version");\n'
+        '        if (FexWineRuntime.isNativeAndroidArm64(wineBin)) {\n'
+        '            if (!FexWineRuntime.ready(new File(winePath))) {\n'
+        '                ProcessHelper.removeDebugCallback(debugCallback);\n'
+        '                callback.call(null);\n'
+        '                return;\n'
+        '            }\n'
+        '            rootFS.setWinePath(winePath);\n'
+        '            guestProgramLauncherComponent.setExecutionBackend(FexWineRuntime.BACKEND_FEXCORE);\n'
+        '        }\n',
+        "WineInstaller probe native version",
+    )
+    return src
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate without modifying files")
@@ -177,6 +294,8 @@ def main() -> int:
         SHORTCUT_FILE: transform_shortcut,
         FRAME_RATING_FILE: transform_frame_rating,
         DXVK_CONFIG_FILE: transform_dxvk_config,
+        GUEST_LAUNCHER_FILE: transform_guest_launcher,
+        WINE_INSTALLER_FILE: transform_wine_installer,
     }
     outputs = {}
 
