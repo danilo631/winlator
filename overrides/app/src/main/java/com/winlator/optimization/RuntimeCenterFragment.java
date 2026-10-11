@@ -122,11 +122,9 @@ public final class RuntimeCenterFragment extends Fragment {
 
     private void openSettings(boolean importFile) {
         SettingsFragment settings = new SettingsFragment();
-        if (importFile) {
-            Bundle args = new Bundle();
-            args.putBoolean("winlator_open_wine_import", true);
-            settings.setArguments(args);
-        }
+        Bundle args = new Bundle();
+        args.putBoolean(importFile ? "winlator_open_wine_import" : "winlator_focus_wine", true);
+        settings.setArguments(args);
         ((MainActivity)requireActivity()).showFragment(settings);
     }
 
