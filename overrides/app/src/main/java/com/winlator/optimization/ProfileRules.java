@@ -16,6 +16,8 @@ public final class ProfileRules {
     public static final int MALI_SAFE = 4;
     public static final int DXVK_DIAGNOSTICS = 5;
     public static final int DXVK_HUD_OFF = 6;
+    public static final int BOX64_CACHE_ON = 7;
+    public static final int BOX64_CACHE_OFF = 8;
 
     public static final String[] LABELS = {
         "Balanced - Box64 intermediate",
@@ -24,7 +26,9 @@ public final class ProfileRules {
         "Lower heat - conservative",
         "Mali - safe graphics environment",
         "DXVK - FPS / frametime diagnostic",
-        "DXVK - hide diagnostic HUD"
+        "DXVK - hide diagnostic HUD",
+        "Box64 - enable 512 MiB JIT cache (experimental)",
+        "Box64 - disable JIT cache"
     };
 
     public static final String[] DESCRIPTIONS = {
@@ -34,7 +38,9 @@ public final class ProfileRules {
         "Conservative CPU emulation and less aggressive GL threading; not a guaranteed power saving.",
         "Removes Turnip/Zink-specific user overrides and uses conservative CPU emulation. Choose Vortek + Gladio or VirGL manually.",
         "Enables DXVK FPS/frametime display. Only affects games actually using DXVK.",
-        "Removes the DXVK_HUD environment override, preserving other settings."
+        "Removes the DXVK_HUD environment override, preserving other settings.",
+        "Opt-in Box64 DynaCache for repeated runs. Uses disk space; may help warm launches but varies by game/Box64 build.",
+        "Disables Box64 DynaCache for this game or container (does not erase existing disk cache)."
     };
 
     private ProfileRules() {}
@@ -82,6 +88,14 @@ public final class ProfileRules {
                 return null;
             case DXVK_HUD_OFF:
                 vars.remove("DXVK_HUD");
+                return null;
+            case BOX64_CACHE_ON:
+                vars.put("BOX64_DYNACACHE", "1");
+                vars.put("BOX64_DYNACACHE_LIMIT", "512");
+                return null;
+            case BOX64_CACHE_OFF:
+                vars.put("BOX64_DYNACACHE", "0");
+                vars.remove("BOX64_DYNACACHE_LIMIT");
                 return null;
             default:
                 throw new IllegalArgumentException("Unknown profile: " + profile);
