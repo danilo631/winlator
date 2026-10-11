@@ -1,6 +1,5 @@
 package com.winlator.optimization;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 
 /**
@@ -53,6 +52,45 @@ public final class WineImportPolicy {
         }
         if (parts.isEmpty()) return null;
         return String.join("/", parts);
+    }
+
+    /** Dynamic loader path, extracted from ELF64 little-endian PT_INTERP if present. */
+    public static String elfInterpreter(byte[] header) {
+        if (header == null || header.length < 64 || header[0] != 0x7f ||
+                header[1] != 'E' || header[2] != 'L' || header[3] != 'F' ||
+                header[4] != 2 || header[5] != 1) return "";
+        long offset = leLong(header, 32);
+        int size = leShort(header, 54);
+        int count = leShort(header, 56);
+        if (offset < 64 || size < 56 || count < 1 || count > 512 ||
+                offset + (long) size * count > header.length) return "";
+        for (int i = 0; i < count; i++) {
+            int ph = (int) (offset + (long) size * i);
+            if (leInt(header, ph) == 3) {
+                long position = leLong(header, ph + 8);
+                long length = leLong(header, ph + 32);
+                if (length < 1 || length > 512 || position < 0 ||
+                        position + length > header.length) return "";
+                int end = (int)(position + length);
+                for (int j=(int)position; j<end; j++) {
+                    if (header[j] == 0) { end = j; break; }
+                }
+                return new String(header, (int)position, end-(int)position,
+                    java.nio.charset.StandardCharsets.UTF_8);
+            }
+        }
+        return "";
+    }
+
+    private static int leShort(byte[] a, int p) {
+        return (a[p]&255)|((a[p+1]&255)<<8);
+    }
+    private static int leInt(byte[] a, int p) {
+        return leShort(a,p)|(leShort(a,p+2)<<16);
+    }
+    private static long leLong(byte[] a, int p) {
+        return ((long)leInt(a,p)&0xffffffffL) |
+                (((long)leInt(a,p+4)&0xffffffffL)<<32);
     }
 
     /** Read only the ELF header. Linux vs Bionic requires inspecting PT_INTERP later. */
