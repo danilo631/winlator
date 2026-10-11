@@ -67,6 +67,15 @@ python3 scripts/package_proton_wine.py \
 - Proton requer configurações de prefixo e bibliotecas do seu próprio runtime; um `proton` script da Steam não substitui `wine` no Winlator.
 - Faça backup dos contêineres antes de importar Wine, pois cada versão pode alterar o prefixo.
 
+
+## Compilação independente dos módulos FEXCore pelo GitHub Actions
+
+O workflow `.github/workflows/build-fexcore-arm64ec.yml` baixa o FEX oficial na tag fixa `FEX-2609` e compila dois módulos PE usando `llvm-mingw` (alvo ARM64EC e alvo AArch64 WoW64). `scripts/package_fexcore_dlls.py` valida os executáveis PE resultantes e gera `FEXCore-2609-ARM64EC-modules.tar.xz` e seu SHA-256.
+
+Acesse **Actions → Experimental FEXCore ARM64EC DLL build** no seu fork, selecione a branch de integração e use **Run workflow**. No job aprovado, o artefato contém DLLs FEX **reais construídas a partir do código-fonte**, não arquivos falsos. O arquivo gerado **não é um instalador de Wine nem um runtime pronto**.
+
+Para usar as DLLs, é preciso incluí-las num Wine Bionic ARM64EC compatível e, quando exigido, adicionar as respectivas `unixlib` ARM64 nativas Android antes do empacotamento final. A construção isolada das DLLs não cria compatibilidade com o Winlator glibc, nem garante inicialização do Wine. Se a compilação falhar, confira os logs e **não substitua a versão estável do Winlator**.
+
 ## Próximos passos necessários para execução validada
 
 Construir e testar um par **Wine ARM64EC/Bionic + FEXCore DLLs + unixlib compatível**, verificar inicialização do Wine e leitura de executáveis Windows no Android e integrar distribuição de componentes **por checksum, versão e arquitetura**. Sem isso, a implementação é um *backend experimental com validações reais*, não um runtime FEX pré-instalado e funcional universalmente.
