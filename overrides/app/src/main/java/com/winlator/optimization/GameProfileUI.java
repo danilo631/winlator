@@ -42,9 +42,11 @@ public final class GameProfileUI {
                 envView.setEnvVars(updated);
 
                 if (box64Id != null) Box64PresetManager.loadSpinner(box64Spinner, box64Id);
+                String thermalNote = ThermalAdvisor.warning(context, profile);
                 new AlertDialog.Builder(context)
                     .setTitle(ProfileRules.LABELS[profile])
                     .setMessage(ProfileRules.DESCRIPTIONS[profile]
+                        + (thermalNote.isEmpty() ? "" : "\n\nDevice warning: " + thermalNote)
                         + "\n\nReview the settings, then tap Save/Confirm to persist them.")
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
