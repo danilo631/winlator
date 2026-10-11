@@ -60,6 +60,14 @@
                 android:paddingStart="15dp"
                 android:paddingEnd="15dp"
                 android:background="@drawable/enhanced_search_field"/>
+
+            <Button
+                android:id="@+id/BTRuntimeCenter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAllCaps="false"
+                android:text="Wine &amp; Proton  •  Baixar, instalar e configurar"/>
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
