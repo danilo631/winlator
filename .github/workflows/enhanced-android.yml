@@ -9,6 +9,7 @@ on:
       - feature/fex-proton-runtime-integration-11
       - feature/launcher-proton-experience-11
       - feature/runtime-center-navigation-11
+      - feature/minimal-runtime-manager-v2
     paths-ignore:
       - 'docs/**'
       - '**/README.md'
@@ -69,16 +70,19 @@ jobs:
             overrides/app/src/main/java/com/winlator/optimization/FexWineRuntime.java \
             overrides/app/src/main/java/com/winlator/optimization/LibraryFilter.java \
             overrides/app/src/main/java/com/winlator/optimization/ProtonSyncRules.java \
+            overrides/app/src/main/java/com/winlator/optimization/WineImportPolicy.java \
             tests/ProfileRulesTest.java \
             tests/FrameTimeTrackerTest.java \
             tests/FexWineRuntimeTest.java \
             tests/LibraryFilterTest.java \
-            tests/ProtonSyncRulesTest.java
+            tests/ProtonSyncRulesTest.java \
+            tests/WineImportPolicyTest.java
           java -ea -cp /tmp/winlator-profile-tests ProfileRulesTest
           java -ea -cp /tmp/winlator-profile-tests FrameTimeTrackerTest
           java -ea -cp /tmp/winlator-profile-tests FexWineRuntimeTest
           java -ea -cp /tmp/winlator-profile-tests LibraryFilterTest
           java -ea -cp /tmp/winlator-profile-tests ProtonSyncRulesTest
+          java -ea -cp /tmp/winlator-profile-tests WineImportPolicyTest
 
       - name: Test Proton Wine archive conversion
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
