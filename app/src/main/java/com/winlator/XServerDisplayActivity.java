@@ -398,7 +398,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
     private void setupXEnvironment() {
         envVars.put("MESA_DEBUG", "silent");
-        envVars.put("MESA_NO_ERROR", "1");
+        // Error suppression is a speed/compatibility trade-off; avoid forcing
+        // it on Mali/other GLES drivers. The user may still opt in manually.
+        if (graphicsDriver.equals("turnip") && GPUInformation.isAdreno(this))
+            envVars.put("MESA_NO_ERROR", "1");
         envVars.put("WINEPREFIX", ImageFs.WINEPREFIX);
 
         boolean enableWineDebug = preferences.getBoolean("enable_wine_debug", false);
@@ -615,11 +618,12 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             if (!envVars.has("MESA_VK_WSI_PRESENT_MODE")) envVars.put("MESA_VK_WSI_PRESENT_MODE", "mailbox");
             envVars.put("vblank_mode", "0");
 
-            if (!GPUInformation.isAdreno6xx(this)) {
-                EnvVars userEnvVars = new EnvVars(container.getEnvVars());
-                String tuDebug = userEnvVars.get("TU_DEBUG");
-                if (!tuDebug.contains("sysmem")) userEnvVars.put("TU_DEBUG", (!tuDebug.isEmpty() ? tuDebug+"," : "")+"sysmem");
-                container.setEnvVars(userEnvVars.toString());
+            // TU_DEBUG belongs to the Turnip session, never to the saved
+            // container profile, and must not be applied to Mali GPUs.
+            if (GPUInformation.isAdreno(this) && !GPUInformation.isAdreno6xx(this)) {
+                String tuDebug = envVars.get("TU_DEBUG");
+                if (!java.util.Arrays.asList(tuDebug.split(",")).contains("sysmem"))
+                    envVars.put("TU_DEBUG", (!tuDebug.isEmpty() ? tuDebug+"," : "")+"sysmem");
             }
 
             boolean useDRI3 = preferences.getBoolean("use_dri3", true);
