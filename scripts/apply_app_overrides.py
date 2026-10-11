@@ -27,6 +27,7 @@ DXVK_CONFIG_FILE = Path("com/winlator/contentdialog/DXVKConfigDialog.java")
 GUEST_LAUNCHER_FILE = Path("com/winlator/xenvironment/components/GuestProgramLauncherComponent.java")
 WINE_INSTALLER_FILE = Path("com/winlator/core/WineInstaller.java")
 CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
+SETTINGS_FILE = Path("com/winlator/SettingsFragment.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -38,6 +39,9 @@ NEW_FILES = (
     Path("com/winlator/optimization/RuntimeBackendUI.java"),
     Path("com/winlator/optimization/EnhancedLibraryUI.java"),
     Path("com/winlator/optimization/LibraryFilter.java"),
+    Path("com/winlator/optimization/ProtonSyncRules.java"),
+    Path("com/winlator/optimization/ProtonTuningUI.java"),
+    Path("com/winlator/optimization/ProtonSourcesUI.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -366,6 +370,24 @@ def transform_containers_list(src: str) -> str:
     )
     return src
 
+
+def transform_settings_fragment(src: str) -> str:
+    src = replace_once(
+        src,
+        "import com.winlator.core.WineInstaller;\n",
+        "import com.winlator.core.WineInstaller;\n"
+        "import com.winlator.optimization.ProtonSourcesUI;\n",
+        "SettingsFragment Proton Wine imports",
+    )
+    src = replace_once(
+        src,
+        "        loadWineVersionSpinner(view, sWineVersion);\n",
+        "        loadWineVersionSpinner(view, sWineVersion);\n"
+        "        ProtonSourcesUI.attach(context, view);\n",
+        "SettingsFragment Proton source / import button",
+    )
+    return src
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate without modifying files")
@@ -383,6 +405,7 @@ def main() -> int:
         GUEST_LAUNCHER_FILE: transform_guest_launcher,
         WINE_INSTALLER_FILE: transform_wine_installer,
         CONTAINERS_FILE: transform_containers_list,
+        SETTINGS_FILE: transform_settings_fragment,
     }
     outputs = {}
 
