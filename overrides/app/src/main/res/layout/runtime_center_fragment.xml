@@ -61,6 +61,9 @@
             <Button android:id="@+id/BTCreateWineContainer"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Criar contêiner" android:textAllCaps="false"/>
+            <Button android:id="@+id/BTDiagnostics"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Diagnóstico" android:textAllCaps="false"/>
             <Button android:id="@+id/BTRuntimeHelp"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Ajuda de compatibilidade" android:textAllCaps="false"/>
