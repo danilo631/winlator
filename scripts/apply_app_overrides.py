@@ -505,7 +505,8 @@ def transform_settings_fragment(src: str) -> str:
         "import com.winlator.core.WineInstaller;\n",
         "import com.winlator.core.WineInstaller;\n"
         "import com.winlator.optimization.ProtonSourcesUI;\n"
-        "import com.winlator.optimization.SettingsOverviewUI;\n",
+        "import com.winlator.optimization.SettingsOverviewUI;\n"
+        "import com.winlator.optimization.WineImportDiagnostics;\n",
         "SettingsFragment Proton Wine imports",
     )
     src = replace_once(
@@ -525,6 +526,49 @@ def transform_settings_fragment(src: str) -> str:
         '        }\n',
         '        view.findViewById(R.id.LLWineInstallation).setVisibility(View.VISIBLE);\n',
         "SettingsFragment always reveal Wine installation controls",
+    )
+    src = replace_once(
+        src,
+        '                if (wineDir != null) {\n'
+        '                    WineInstaller.findWineVersionAsync(context, wineDir, (wineInfo) -> {\n',
+        '                if (wineDir != null) {\n'
+        '                    String reason = WineImportDiagnostics.inspectExtracted(wineDir);\n'
+        '                    if (reason != null) {\n'
+        '                        preloaderDialog.closeOnUiThread();\n'
+        '                        getActivity().runOnUiThread(() -> new android.app.AlertDialog.Builder(context)\n'
+        '                            .setTitle("Wine incompatível")\n'
+        '                            .setMessage(reason + "\\n\\nO Winlator padrão continua disponível. "\n'
+        '                                + "Teste outra build Wine para este rootfs.")\n'
+        '                            .setPositiveButton(android.R.string.ok, null).show());\n'
+        '                        return;\n'
+        '                    }\n'
+        '                    WineInstaller.findWineVersionAsync(context, wineDir, (wineInfo) -> {\n',
+        "SettingsFragment preflight Wine ABI",
+    )
+    src = replace_once(
+        src,
+        '                            AppUtils.showToast(context, R.string.unable_to_install_wine);\n'
+        '                            return;\n',
+        '                            String message = WineImportDiagnostics.lastError();\n'
+        '                            getActivity().runOnUiThread(() -> new android.app.AlertDialog.Builder(context)\n'
+        '                                .setTitle("Não foi possível instalar Wine")\n'
+        '                                .setMessage(message.isEmpty() ? "Falha ao iniciar Wine --version; "\n'
+        '                                    + "verifique o ABI e as bibliotecas do pacote." : message)\n'
+        '                                .setPositiveButton(android.R.string.ok, null).show());\n'
+        '                            return;\n',
+        "SettingsFragment detailed Wine probe error",
+    )
+    src = replace_once(
+        src,
+        '                    AppUtils.showToast(context, R.string.unable_to_install_wine);\n'
+        '                    preloaderDialog.closeOnUiThread();\n',
+        '                    preloaderDialog.closeOnUiThread();\n'
+        '                    String message = WineImportDiagnostics.lastError();\n'
+        '                    getActivity().runOnUiThread(() -> new android.app.AlertDialog.Builder(context)\n'
+        '                        .setTitle("Falha na extração do Wine")\n'
+        '                        .setMessage(message.isEmpty() ? "Arquivo Wine corrompido ou sem permissão." : message)\n'
+        '                        .setPositiveButton(android.R.string.ok, null).show());\n',
+        "SettingsFragment detailed XZ/ZSTD extraction error",
     )
     src = replace_once(
         src,
