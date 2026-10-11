@@ -31,7 +31,7 @@ public class WineImportPolicyTest {
         check(!WineImportPolicy.safeMember("/etc/passwd"), "absolute escape");
         check(!WineImportPolicy.safeMember("C:\\windows"), "backslash");
         check(!WineImportPolicy.safeMember("C:/windows"), "windows device");
-        check(!WineImportPolicy.safeLink("lib/wine/lib.so", "../other.so", false), "symlink resolution rejected");
+        check(WineImportPolicy.safeLink("lib/wine/lib.so", "../other.so", false), "symlink within root");
         check(WineImportPolicy.safeLink("lib/wine/a.so", "b.so", false), "safe symlink");
         check(WineImportPolicy.safeLink("lib/wine/a.so", "../unix/b.so", false), "safe nested symlink");
         check(!WineImportPolicy.safeLink("lib/wine/a.so", "../../../etc/shadow", false), "symlink escape");
