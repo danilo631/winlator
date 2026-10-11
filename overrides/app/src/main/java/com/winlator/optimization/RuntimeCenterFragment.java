@@ -52,8 +52,8 @@ public final class RuntimeCenterFragment extends Fragment {
 
         root.findViewById(R.id.BTOpenProtonReleases).setOnClickListener(v -> open(RELEASES));
         root.findViewById(R.id.BTDownloadProtonBox).setOnClickListener(
-            v -> confirmDownload("Proton Wine x86_64 — Box64", X86_WINE,
-                "Projetado para Wine x86_64. A build Bionic pode não funcionar com o rootfs glibc do Winlator padrão."));
+            v -> confirmDownload("Proton Wine x86_64 (Bionic)", X86_WINE,
+                "Este pacote é para forks compatíveis com Android/Bionic (CMOD/Ludashi). O Winlator padrão usa Wine Linux/glibc e pode recusar a importação."));
         root.findViewById(R.id.BTDownloadProtonFex).setOnClickListener(
             v -> confirmDownload("Proton Wine ARM64EC — FEXCore", ARM_WINE,
                 "Exige FEXCore compatível e bibliotecas Unix Android. O Wine x86_64 não substitui o ARM64EC."));
@@ -65,6 +65,20 @@ public final class RuntimeCenterFragment extends Fragment {
                     "Abra o Winlator, conclua a instalação dos arquivos de sistema e tente novamente.");
             }
             else ((MainActivity)requireActivity()).showFragment(new ContainerDetailFragment());
+        });
+        root.findViewById(R.id.BTDiagnostics).setOnClickListener(v -> {
+            final String report = RuntimeDiagnostics.collect(requireContext());
+            new AlertDialog.Builder(requireContext())
+                .setTitle("Diagnóstico de execução")
+                .setMessage(report)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Compartilhar", (d, which) -> {
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("text/plain");
+                    share.putExtra(Intent.EXTRA_TEXT, report);
+                    startActivity(Intent.createChooser(share, "Compartilhar diagnóstico"));
+                })
+                .show();
         });
         root.findViewById(R.id.BTRuntimeHelp).setOnClickListener(v ->
             message("Como selecionar Wine e tradutor",
