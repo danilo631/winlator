@@ -72,5 +72,6 @@ public final class RuntimeBackendUI {
                 + "with matched FEXCore DLLs. Avoid mixing glibc and Bionic packages.")
             .setPositiveButton(android.R.string.ok, null)
             .show());
+        ProtonTuningUI.attach(context, tab, varsView);
     }
 }
