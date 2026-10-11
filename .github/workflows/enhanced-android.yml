@@ -5,9 +5,11 @@ on:
   push:
     branches:
       - feature/winlator-enhanced-profiles-11
+      - feature/winlator-frame-pacing-cache-11
   pull_request:
     branches:
       - main
+      - feature/winlator-enhanced-profiles-11
 
 permissions:
   contents: read
@@ -43,8 +45,12 @@ jobs:
           mkdir -p /tmp/winlator-profile-tests
           javac -encoding UTF-8 -d /tmp/winlator-profile-tests \
             overrides/app/src/main/java/com/winlator/optimization/ProfileRules.java \
-            tests/ProfileRulesTest.java
+            overrides/app/src/main/java/com/winlator/optimization/FrameTimeTracker.java \
+            overrides/app/src/main/java/com/winlator/optimization/ConfigFilePolicy.java \
+            tests/ProfileRulesTest.java \
+            tests/FrameTimeTrackerTest.java
           java -ea -cp /tmp/winlator-profile-tests ProfileRulesTest
+          java -ea -cp /tmp/winlator-profile-tests FrameTimeTrackerTest
 
   apk:
     name: Build Android debug APK (experimental)
