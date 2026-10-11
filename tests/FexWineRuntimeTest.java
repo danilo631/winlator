@@ -54,7 +54,8 @@ public final class FexWineRuntimeTest {
             pe[128] = 'P'; pe[129] = 'E';
             Files.write(dllDir.resolve(dll), pe);
         }
-        expect(FexWineRuntime.ready(wineDir), "valid Bionic Wine + FEX DLLs");
+        expect(FexWineRuntime.ready(wineDir), "valid Bionic Wine + FEX DLLs: " + FexWineRuntime.check(wineDir)
+            + " exec=" + bin.canExecute() + " dll=" + FexWineRuntime.isPE(dllDir.resolve("libarm64ecfex.dll").toFile()));
         expect(FexWineRuntime.nativeWineCommand("wine explorer /desktop=shell,1280x720", wineDir)
             .equals(bin.getAbsolutePath()+" explorer /desktop=shell,1280x720"),
             "native command must bypass Box64");
