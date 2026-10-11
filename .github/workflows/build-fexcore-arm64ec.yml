@@ -1,0 +1,86 @@
+name: Experimental FEXCore ARM64EC DLL build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-fexcore-arm64ec.yml'
+      - 'scripts/package_fexcore_dlls.py'
+    branches:
+      - feature/fex-proton-runtime-integration-11
+
+permissions:
+  contents: read
+
+jobs:
+  compile:
+    name: Cross-compile Wine FEXCore PE DLLs
+    runs-on: ubuntu-22.04
+    timeout-minutes: 100
+    steps:
+      - name: Checkout packaging script
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout upstream FEX
+        uses: actions/checkout@v4
+        with:
+          repository: FEX-Emu/FEX
+          ref: FEX-2609
+          path: fex-src
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build git python3 curl xz-utils \
+            build-essential pkg-config dos2unix perl
+
+      - name: Install pinned LLVM-MinGW toolchain
+        run: |
+          set -euo pipefail
+          TOOLCHAIN_TAG=20251104
+          FILE="llvm-mingw-${TOOLCHAIN_TAG}-ucrt-ubuntu-22.04-x86_64.tar.xz"
+          curl --fail --location --retry 3 \
+            "https://github.com/mstorsjo/llvm-mingw/releases/download/${TOOLCHAIN_TAG}/${FILE}" \
+            --output /tmp/llvm-mingw.tar.xz
+          sudo mkdir -p /opt/llvm-mingw
+          sudo tar -C /opt/llvm-mingw --strip-components=1 -xJf /tmp/llvm-mingw.tar.xz
+          echo "/opt/llvm-mingw/bin" >> "$GITHUB_PATH"
+
+      - name: Compile arm64ec and aarch64 translator modules
+        run: |
+          set -euo pipefail
+          for triple in arm64ec aarch64; do
+            cmake -S fex-src -B "build-$triple" -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_TOOLCHAIN_FILE="$PWD/fex-src/Data/CMake/toolchain_mingw.cmake" \
+              -DMINGW_TRIPLE="$triple-w64-mingw32" \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_INSTALL_LIBDIR=/usr/lib/wine/aarch64-windows \
+              -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+              -DENABLE_ASSERTIONS=False \
+              -DENABLE_LTO=False -DBUILD_TESTING=False
+            cmake --build "build-$triple" --parallel 2
+            DESTDIR="$PWD/stage-$triple" cmake --install "build-$triple"
+          done
+
+      - name: Package and validate actual PE libraries
+        run: |
+          python3 scripts/package_fexcore_dlls.py \
+            --arm64ec stage-arm64ec \
+            --wow64 stage-aarch64 \
+            --output FEXCore-2609-ARM64EC-modules.tar.xz
+
+      - name: Upload FEX translator modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: FEXCore-2609-ARM64EC-DLLs
+          path: |
+            FEXCore-2609-ARM64EC-modules.tar.xz
+            FEXCore-2609-ARM64EC-modules.tar.xz.sha256
+          if-no-files-found: error
+          retention-days: 14
