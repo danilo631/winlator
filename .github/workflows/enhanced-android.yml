@@ -9,6 +9,14 @@ on:
       - feature/fex-proton-runtime-integration-11
       - feature/launcher-proton-experience-11
       - feature/runtime-center-navigation-11
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - '.editorconfig'
+      - '.gitignore'
+      - '.github/pull_request_template.md'
   pull_request:
     branches:
       - main
