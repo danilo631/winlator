@@ -40,6 +40,9 @@
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Os pacotes Proton Bionic podem exigir outro ambiente. O download não instala o Wine."
                 android:textColor="#AEB7C3" android:textSize="12sp" android:layout_marginBottom="8dp"/>
+            <Button android:id="@+id/BTLinuxWineSources"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Wine / Proton Linux (Box64)" android:textAllCaps="false"/>
             <Button android:id="@+id/BTDownloadProtonBox"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Proton Wine x86_64" android:textAllCaps="false"/>
