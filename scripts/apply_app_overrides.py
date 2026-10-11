@@ -44,6 +44,7 @@ NEW_FILES = (
     Path("com/winlator/optimization/ProtonTuningUI.java"),
     Path("com/winlator/optimization/ProtonSourcesUI.java"),
     Path("com/winlator/optimization/RuntimeCenterFragment.java"),
+    Path("com/winlator/optimization/SettingsOverviewUI.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -395,14 +396,16 @@ def transform_settings_fragment(src: str) -> str:
         src,
         "import com.winlator.core.WineInstaller;\n",
         "import com.winlator.core.WineInstaller;\n"
-        "import com.winlator.optimization.ProtonSourcesUI;\n",
+        "import com.winlator.optimization.ProtonSourcesUI;\n"
+        "import com.winlator.optimization.SettingsOverviewUI;\n",
         "SettingsFragment Proton Wine imports",
     )
     src = replace_once(
         src,
         "        loadWineVersionSpinner(view, sWineVersion);\n",
         "        loadWineVersionSpinner(view, sWineVersion);\n"
-        "        ProtonSourcesUI.attach(context, view);\n",
+        "        ProtonSourcesUI.attach(context, view);\n"
+        "        SettingsOverviewUI.attach(context, view);\n",
         "SettingsFragment Proton source / import button",
     )
     # The stock release leaves Wine installation hidden unless DEBUG_MODE.
