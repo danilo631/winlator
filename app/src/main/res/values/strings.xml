@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Winlator</string>
+    <string name="mali_graphics_hint">Mali GPU detected: VirGL + WineD3D is the compatible fallback. Turnip is Adreno-only. Vulkan renderers such as Vortek require a newer Winlator version.</string>
     <string name="run">Run</string>
     <string name="edit">Edit</string>
     <string name="remove">Remove</string>
