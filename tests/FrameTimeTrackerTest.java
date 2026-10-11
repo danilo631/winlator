@@ -26,6 +26,8 @@ public final class FrameTimeTrackerTest {
 
         ns += 120_000_000L;
         tracker.record(ns);
+        ns += 120_000_000L;
+        tracker.record(ns);
         FrameTimeTracker.Stats oneStutter = tracker.snapshot();
         check(oneStutter.p99Ms > 100, "p99 must catch rare stutter");
         check(oneStutter.p95Ms < 17, "p95 stable after rare stutter");
