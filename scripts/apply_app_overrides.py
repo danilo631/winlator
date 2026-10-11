@@ -224,6 +224,19 @@ def transform_guest_launcher(src: str) -> str:
         "GuestProgramLauncher config setup",
     )
     src = replace_once(
+        src,
+        '        envVars.put("BOX64_LD_LIBRARY_PATH", rootDir+"/lib/x86_64-linux-gnu");\n',
+        '        if (nativeFex) {\n'
+        '            File wineDir = new File(rootDir.toString()+rootFS.getWinePath());\n'
+        '            envVars.put("LD_LIBRARY_PATH",\n'
+        '                new File(wineDir, "lib/wine/aarch64-unix").getPath()+":"\n'
+        '                +new File(wineDir, "lib").getPath()+":"\n'
+        '                +rootFS.getLibDir().getPath());\n'
+        '        }\n'
+        '        else envVars.put("BOX64_LD_LIBRARY_PATH", rootDir+"/lib/x86_64-linux-gnu");\n',
+        "GuestProgramLauncher native Wine Unix library path",
+    )
+    src = replace_once(
         src, '        if (this.envVars != null) envVars.putAll(this.envVars);\n',
         '        if (this.envVars != null) envVars.putAll(this.envVars);\n'
         '        envVars.remove(FexWineRuntime.ENV_BACKEND);\n',
