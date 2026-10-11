@@ -4,44 +4,39 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.view.View;
 
-/** Clear official download route, SAF-import hook and ABI guidance. */
+/** Explicit upstream open-source sources, grouped by Linux vs Android ABI. */
 public final class ProtonSourcesUI {
-    private static final String PROTON_RELEASES = "https://github.com/GameNative/proton-wine/releases";
     private ProtonSourcesUI() {}
 
     public static void attach(Context context, View root) {
-        LinearLayout wineSection = root.findViewById(com.winlator.R.id.LLWineInstallation);
-        if (wineSection == null) return;
-        Button release = new Button(context);
-        release.setAllCaps(false);
-        release.setText("Proton Wine 11 • versões para Android");
-        wineSection.addView(release);
-        release.setOnClickListener(v -> new AlertDialog.Builder(context)
-            .setTitle("Baixar Proton Wine oficial")
-            .setMessage("Os releases GameNative/proton-wine possuem builds x86_64 e ARM64EC. "
-                + "Para importar pelo Winlator 11.2, escolha o arquivo Wine Type .wcp.xz "
-                + "(tar.xz) — não o Proton Type .wcp (tar.zst). "
-                + "x86_64 funciona via Box64 se o Wine tiver bibliotecas compatíveis; "
-                + "ARM64EC exige Wine Android/Bionic + FEXCore e bibliotecas correspondentes. "
-                + "O instalador do Winlator possui suporte a arquivos tar.xz; "
-                + "a execução e compatibilidade precisam ser testadas.")
+        LinearLayout wine = root.findViewById(com.winlator.R.id.LLWineInstallation);
+        if (wine == null) return;
+        Button help = new Button(context);
+        help.setAllCaps(false);
+        help.setText("Fontes Wine e Proton");
+        wine.addView(help);
+        help.setOnClickListener(v -> new AlertDialog.Builder(context)
+            .setTitle("Escolher pacote Wine")
+            .setMessage("Winlator padrão: prefira Wine Linux x86_64 compatível com o rootfs glibc. "
+                + "Kron4ek oferece Wine Staging e versões derivadas do Proton para Linux. "
+                + "As builds GameNative usam Android/Bionic para outros ambientes, "
+                + "e podem falhar neste Winlator mesmo em TAR XZ.")
             .setNegativeButton(android.R.string.cancel, null)
-            .setNeutralButton("Escolher arquivo", (d, w) -> {
-                View pick = root.findViewById(com.winlator.R.id.BTInstallWine);
-                if (pick != null) pick.performClick();
-            })
-            .setPositiveButton("Ver releases", (d, w) -> {
-                Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse(PROTON_RELEASES));
-                try { context.startActivity(browser); }
-                catch (Exception ignored) {
-                    new AlertDialog.Builder(context).setMessage(PROTON_RELEASES)
-                        .setPositiveButton(android.R.string.ok, null).show();
-                }
-            }).show());
+            .setNeutralButton("Proton Android", (dialog, which) ->
+                open(context, "https://github.com/GameNative/proton-wine/releases"))
+            .setPositiveButton("Wine Linux", (dialog, which) ->
+                open(context, "https://github.com/Kron4ek/Wine-Builds/releases"))
+            .show());
+    }
+    private static void open(Context context, String url) {
+        try { context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
+        catch (Exception e) {
+            new AlertDialog.Builder(context).setMessage(url)
+                .setPositiveButton(android.R.string.ok, null).show();
+        }
     }
 }
