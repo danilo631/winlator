@@ -8,12 +8,14 @@ on:
       - feature/winlator-frame-pacing-cache-11
       - feature/fex-proton-runtime-integration-11
       - feature/launcher-proton-experience-11
+      - feature/runtime-center-navigation-11
   pull_request:
     branches:
       - main
       - feature/winlator-enhanced-profiles-11
       - feature/winlator-frame-pacing-cache-11
       - feature/fex-proton-runtime-integration-11
+      - feature/launcher-proton-experience-11
 
 permissions:
   contents: read
