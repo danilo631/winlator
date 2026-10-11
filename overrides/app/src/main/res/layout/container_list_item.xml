@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="12dp"
+    android:layout_marginEnd="12dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="6dp"
+    android:padding="15dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:elevation="3dp"
+    android:background="@drawable/enhanced_library_card">
+
+    <ImageView
+        android:id="@+id/ImageView"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:padding="9dp"
+        android:background="@drawable/enhanced_icon_tile"
+        android:tint="#7DD3FC"
+        android:contentDescription="Contêiner" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="14dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/TVTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#F8FAFC"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+
+        <TextView
+            android:id="@+id/TVEngine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="#7DD3FC"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <TextView
+            android:id="@+id/TVDriver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textSize="11sp"
+            android:textColor="#B9C5D8"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+
+        <TextView
+            android:id="@+id/TVWineLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="10sp"
+            android:textColor="#94A3B8"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="7dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/BTRun"
+            android:layout_width="46dp"
+            android:layout_height="45dp"
+            android:padding="12dp"
+            android:src="@drawable/icon_run"
+            android:tint="#FFFFFF"
+            android:contentDescription="Iniciar contêiner"
+            android:background="@drawable/enhanced_play_button"/>
+
+        <ImageView
+            android:id="@+id/BTMenu"
+            android:layout_width="46dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="4dp"
+            android:padding="12dp"
+            android:src="@drawable/icon_list_item_menu"
+            android:tint="#E2E8F0"
+            android:contentDescription="Opções do contêiner"
+            android:background="@drawable/enhanced_icon_tile"/>
+    </LinearLayout>
+</LinearLayout>
