@@ -44,10 +44,14 @@ public final class FexWineRuntimeTest {
         Files.write(bin.toPath(), binary("/system/bin/linker64", 183));
         expect(FexWineRuntime.isNativeAndroidArm64(bin), "Android AArch64 accepted");
         expect(FexWineRuntime.check(wineDir) != null, "no DLLs cannot be ready");
+        expect(bin.setExecutable(true), "Wine executable permission for test");
 
         for (String dll : new String[]{"libarm64ecfex.dll", "libwow64fex.dll"}) {
             byte[] pe = new byte[320];
             pe[0] = 'M'; pe[1] = 'Z';
+            ByteBuffer peHeader = ByteBuffer.wrap(pe).order(ByteOrder.LITTLE_ENDIAN);
+            peHeader.putInt(0x3c, 128);
+            pe[128] = 'P'; pe[129] = 'E';
             Files.write(dllDir.resolve(dll), pe);
         }
         expect(FexWineRuntime.ready(wineDir), "valid Bionic Wine + FEX DLLs");
