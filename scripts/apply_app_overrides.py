@@ -350,6 +350,8 @@ def transform_containers_list(src: str) -> str:
         "        DividerItemDecoration itemDecoration = new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);\n"
         "        itemDecoration.setDrawable(ContextCompat.getDrawable(context, R.drawable.list_item_divider));\n"
         "        recyclerView.addItemDecoration(itemDecoration);\n",
+        "        frameLayout.findViewById(R.id.BTRuntimeCenter).setOnClickListener(v ->\n"
+        "            ((MainActivity)requireActivity()).showFragment(new com.winlator.optimization.RuntimeCenterFragment()));\n"
         "        EditText search = frameLayout.findViewById(R.id.ETSearchContainers);\n"
         "        search.addTextChangedListener(new TextWatcher() {\n"
         "            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}\n"
