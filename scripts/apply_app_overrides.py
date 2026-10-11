@@ -26,6 +26,7 @@ FRAME_RATING_FILE = Path("com/winlator/widget/FrameRating.java")
 DXVK_CONFIG_FILE = Path("com/winlator/contentdialog/DXVKConfigDialog.java")
 GUEST_LAUNCHER_FILE = Path("com/winlator/xenvironment/components/GuestProgramLauncherComponent.java")
 WINE_INSTALLER_FILE = Path("com/winlator/core/WineInstaller.java")
+TAR_UTILS_FILE = Path("com/winlator/core/TarCompressorUtils.java")
 CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
 SETTINGS_FILE = Path("com/winlator/SettingsFragment.java")
 MAIN_ACTIVITY_FILE = Path("com/winlator/MainActivity.java")
@@ -45,6 +46,8 @@ NEW_FILES = (
     Path("com/winlator/optimization/ProtonSourcesUI.java"),
     Path("com/winlator/optimization/RuntimeCenterFragment.java"),
     Path("com/winlator/optimization/SettingsOverviewUI.java"),
+    Path("com/winlator/optimization/WineImportPolicy.java"),
+    Path("com/winlator/optimization/WineImportDiagnostics.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -271,6 +274,89 @@ def transform_guest_launcher(src: str) -> str:
     )
     return src
 
+
+def transform_tar_utils(src: str) -> str:
+    src = replace_once(
+        src,
+        "import android.net.Uri;\n",
+        "import android.net.Uri;\n"
+        "import com.winlator.optimization.WineImportPolicy;\n"
+        "import com.winlator.optimization.WineImportDiagnostics;\n",
+        "TarCompressor Wine safety imports",
+    )
+    marker = "    public static long getContentLength(Type type, Context context, String assetFile, File destination) {\n"
+    secured = """
+    /**
+     * Dedicated safe Wine extractor. Does not modify general-purpose tar routines:
+     * validates paths and relative symlinks before filesystem writes.
+     */
+    public static boolean extractVerifiedWine(Type type, Context context, Uri uri, File destination) {
+        File root;
+        try { root = destination.getCanonicalFile(); }
+        catch (IOException e) { WineImportDiagnostics.fail("Destino inválido."); return false; }
+        if (!root.isDirectory() && !root.mkdirs()) {
+            WineImportDiagnostics.fail("Falha ao preparar a pasta Wine.");
+            return false;
+        }
+        String rootPrefix = root.getPath()+File.separator;
+        long expandedBytes = 0;
+        int entries = 0;
+        try (InputStream source = context.getContentResolver().openInputStream(uri);
+             InputStream decompressed = getCompressorInputStream(type, source);
+             TarArchiveInputStream tar = new TarArchiveInputStream(decompressed)) {
+            TarArchiveEntry entry;
+            while ((entry = tar.getNextTarEntry()) != null) {
+                String name = WineImportPolicy.canonical(entry.getName());
+                if (name == null || !tar.canReadEntryData(entry))
+                    throw new IOException("Caminho inválido no arquivo Wine: "+entry.getName());
+                if (++entries > 200000 || entry.getSize() < 0 ||
+                        entry.getSize() > 4L*1024*1024*1024)
+                    throw new IOException("Quantidade ou tamanho de arquivo Wine inválido");
+                expandedBytes += entry.getSize();
+                if (expandedBytes > 6L*1024*1024*1024)
+                    throw new IOException("Arquivo Wine excede limite de extração");
+                if (!entry.isFile() && !entry.isDirectory() && !entry.isSymbolicLink())
+                    throw new IOException("Tipo de arquivo Wine não suportado: "+name);
+                if (entry.isSymbolicLink() &&
+                        !WineImportPolicy.safeLink(name, entry.getLinkName(), false))
+                    throw new IOException("Link Wine aponta para fora da pasta: "+name);
+
+                File target = new File(root, name);
+                String checked = target.getCanonicalPath();
+                if (!checked.startsWith(rootPrefix))
+                    throw new IOException("Arquivo Wine escapa da pasta de destino: "+name);
+                File parent = target.getParentFile();
+                if (!parent.isDirectory() && !parent.mkdirs())
+                    throw new IOException("Não foi possível criar a pasta para "+name);
+                if (entry.isDirectory()) {
+                    if (!target.isDirectory() && !target.mkdirs())
+                        throw new IOException("Não foi possível criar pasta "+name);
+                }
+                else if (entry.isSymbolicLink()) {
+                    FileUtils.symlink(entry.getLinkName(), target.getAbsolutePath());
+                }
+                else {
+                    try (BufferedOutputStream out = new BufferedOutputStream(
+                            new FileOutputStream(target), StreamUtils.BUFFER_SIZE)) {
+                        if (!StreamUtils.copy(tar, out))
+                            throw new IOException("Falha ao extrair "+name);
+                    }
+                }
+                FileUtils.chmod(target, 0771);
+            }
+            if (entries == 0) throw new IOException("Arquivo Wine vazio");
+            return true;
+        }
+        catch (Exception failure) {
+            WineImportDiagnostics.fail("Extração Wine falhou: "+failure.getMessage());
+            return false;
+        }
+    }
+
+"""
+    return replace_once(src, marker, secured + marker, "Wine archive safe extraction")
+
+
 def transform_wine_installer(src: str) -> str:
     src = replace_once(
         src,
@@ -483,6 +569,7 @@ def main() -> int:
         DXVK_CONFIG_FILE: transform_dxvk_config,
         GUEST_LAUNCHER_FILE: transform_guest_launcher,
         WINE_INSTALLER_FILE: transform_wine_installer,
+        TAR_UTILS_FILE: transform_tar_utils,
         CONTAINERS_FILE: transform_containers_list,
         SETTINGS_FILE: transform_settings_fragment,
         MAIN_ACTIVITY_FILE: transform_main_activity,
