@@ -1,0 +1,98 @@
+name: Bundle ARM64EC Proton Wine + FEXCore
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "GameNative/proton-wine release tag"
+        required: true
+        default: "proton-11.0-2-20261010"
+        type: string
+      wine_asset:
+        description: "Official Wine Type ARM64EC .wcp.xz filename"
+        required: true
+        default: "proton-wine-11.0-2-arm64ec.wcp.xz"
+        type: string
+  push:
+    branches:
+      - feature/launcher-proton-experience-11
+    paths:
+      - '.github/workflows/proton-fex-bundle.yml'
+      - 'scripts/assemble_fex_proton.py'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fex-wine-package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle:
+    name: Build testable Winlator ARM64EC Wine package
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PROTON_TAG: ${{ inputs.release_tag || 'proton-11.0-2-20261010' }}
+      PROTON_ASSET: ${{ inputs.wine_asset || 'proton-wine-11.0-2-arm64ec.wcp.xz' }}
+    steps:
+      - name: Checkout integration tools
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate upstream artifact identifiers
+        run: |
+          set -euo pipefail
+          [[ "$PROTON_TAG" =~ ^[a-zA-Z0-9._-]+$ ]] || exit 1
+          [[ "$PROTON_ASSET" =~ ^[a-zA-Z0-9._-]+\.wcp\.xz$ ]] || exit 1
+          [[ "$PROTON_ASSET" == *arm64ec* ]] || { echo "Only ARM64EC builds supported" >&2; exit 1; }
+
+      - name: Download official Proton Wine release
+        run: |
+          set -euo pipefail
+          URL="https://github.com/GameNative/proton-wine/releases/download/${PROTON_TAG}/${PROTON_ASSET}"
+          curl --fail --location --retry 3 "$URL" -o proton-wine-arm64ec.wcp.xz
+          ls -lh proton-wine-arm64ec.wcp.xz
+          sha256sum proton-wine-arm64ec.wcp.xz
+
+      - name: Retrieve successful upstream-source FEXCore DLL artifact
+        run: |
+          set -euo pipefail
+          FEX_RUN="$(gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow build-fexcore-arm64ec.yml --limit 40 \
+            --json databaseId,conclusion \
+            --jq '[.[] | select(.conclusion == "success")][0].databaseId')"
+          if [[ "$FEX_RUN" == "null" || -z "$FEX_RUN" ]]; then
+            echo "No successful FEXCore DLL build found. Run build-fexcore-arm64ec.yml first." >&2
+            exit 1
+          fi
+          echo "Using FEXCore build run $FEX_RUN"
+          gh run download "$FEX_RUN" --repo "$GITHUB_REPOSITORY" \
+            --name FEXCore-2609-ARM64EC-DLLs --dir fex-artifact
+          test -s fex-artifact/FEXCore-2609-ARM64EC-modules.tar.xz
+
+      - name: Assemble and verify importable Wine tree
+        run: |
+          set -euo pipefail
+          python3 scripts/assemble_fex_proton.py \
+            --wine proton-wine-arm64ec.wcp.xz \
+            --fex fex-artifact/FEXCore-2609-ARM64EC-modules.tar.xz \
+            --output Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz
+          sha256sum --check Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz.sha256
+          tar -tJf Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz \
+            | grep -x 'lib/wine/aarch64-windows/libwow64fex.dll'
+          tar -tJf Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz \
+            | grep -x 'lib/wine/aarch64-windows/libarm64ecfex.dll'
+
+      - name: Upload assembled Proton Wine + FEXCore package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Proton-Wine-ARM64EC-FEXCore-Winlator
+          path: |
+            Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz
+            Proton-Wine-ARM64EC-FEXCore-Winlator.tar.xz.sha256
+          if-no-files-found: error
+          retention-days: 14
