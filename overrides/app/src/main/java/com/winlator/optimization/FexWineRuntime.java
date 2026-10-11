@@ -28,6 +28,8 @@ public final class FexWineRuntime {
         File wine = new File(wineDir, "bin/wine");
         if (!isNativeAndroidArm64(wine))
             return "Wine must be Android/Bionic ARM64 ELF64, not glibc or x86_64 Wine";
+        if (!wine.canExecute())
+            return "Native ARM64 Wine is not executable; verify package permissions";
         File pe = new File(wineDir, "lib/wine/aarch64-windows");
         File arm64ec = new File(pe, "libarm64ecfex.dll");
         File wow64 = new File(pe, "libwow64fex.dll");
@@ -87,8 +89,14 @@ public final class FexWineRuntime {
     public static boolean isPE(File path) {
         if (path == null || !path.isFile()) return false;
         try (RandomAccessFile file = new RandomAccessFile(path, "r")) {
-            return file.length() > 256 && file.readUnsignedByte() == 'M'
-                && file.readUnsignedByte() == 'Z';
+            if (file.length() < 256 || file.readUnsignedByte() != 'M'
+                || file.readUnsignedByte() != 'Z') return false;
+            file.seek(0x3c);
+            long peOffset = Integer.toUnsignedLong(Integer.reverseBytes(file.readInt()));
+            if (peOffset < 64 || peOffset > file.length() - 24) return false;
+            file.seek(peOffset);
+            return file.readUnsignedByte() == 'P' && file.readUnsignedByte() == 'E'
+                && file.readUnsignedByte() == 0 && file.readUnsignedByte() == 0;
         }
         catch (IOException error) {
             return false;
