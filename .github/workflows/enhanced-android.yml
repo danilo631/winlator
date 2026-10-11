@@ -66,16 +66,21 @@ jobs:
           cache: gradle
           cache-dependency-path: app/gradle/wrapper/gradle-wrapper.properties
 
-      - name: Check Android SDK on GitHub runner
+      - name: Locate Android SDK command-line tools
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
-          command -v sdkmanager
-          sdkmanager --list_installed | head -40
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found in Android SDK" >&2
+            exit 1
+          fi
+          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
+          "$SDKMANAGER" --list_installed | head -40
 
       - name: Install required SDK packages
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager "platforms;android-35" "ndk;24.0.8215888" "cmake;3.22.1"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "ndk;24.0.8215888" "cmake;3.22.1"
 
       - name: Apply Winlator Enhanced sources
         run: python3 scripts/apply_app_overrides.py
