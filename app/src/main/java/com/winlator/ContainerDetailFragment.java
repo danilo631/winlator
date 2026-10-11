@@ -34,6 +34,7 @@ import com.winlator.contentdialog.DXVKConfigDialog;
 import com.winlator.core.AppUtils;
 import com.winlator.core.Callback;
 import com.winlator.core.EnvVars;
+import com.winlator.core.GPUInformation;
 import com.winlator.core.FileUtils;
 import com.winlator.core.KeyValueSet;
 import com.winlator.core.PreloaderDialog;
@@ -128,6 +129,10 @@ public class ContainerDetailFragment extends Fragment {
 
         loadScreenSizeSpinner(view, isEditMode() ? container.getScreenSize() : Container.DEFAULT_SCREEN_SIZE);
 
+        // Explain the alternative render path only on detected Mali devices.
+        if (GPUInformation.isMali(context))
+            view.findViewById(R.id.TVMaliGraphicsHint).setVisibility(View.VISIBLE);
+
         final Spinner sGraphicsDriver = view.findViewById(R.id.SGraphicsDriver);
         final Spinner sDXWrapper = view.findViewById(R.id.SDXWrapper);
 
@@ -135,8 +140,14 @@ public class ContainerDetailFragment extends Fragment {
         vDXWrapperConfig.setTag(isEditMode() ? container.getDXWrapperConfig() : "");
 
         setupDXWrapperSpinner(sDXWrapper, vDXWrapperConfig);
-        loadGraphicsDriverSpinner(sGraphicsDriver, sDXWrapper, isEditMode() ? container.getGraphicsDriver() : Container.DEFAULT_GRAPHICS_DRIVER,
-            isEditMode() ? container.getDXWrapper() : Container.DEFAULT_DXWRAPPER);
+        // Turnip is Adreno-specific. New Mali (and other non-Adreno) containers
+        // start on a usable OpenGL path instead of a Vulkan driver that cannot load.
+        boolean useTurnipDefaults = !isEditMode() && GPUInformation.isAdreno(context);
+        String initialGraphicsDriver = isEditMode() ? container.getGraphicsDriver()
+            : (useTurnipDefaults ? Container.DEFAULT_GRAPHICS_DRIVER : "virgl");
+        String initialDXWrapper = isEditMode() ? container.getDXWrapper()
+            : (useTurnipDefaults ? Container.DEFAULT_DXWRAPPER : "wined3d");
+        loadGraphicsDriverSpinner(sGraphicsDriver, sDXWrapper, initialGraphicsDriver, initialDXWrapper);
 
         view.findViewById(R.id.BTHelpDXWrapper).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, R.string.dxwrapper_help_content));
 
@@ -499,7 +510,9 @@ public class ContainerDetailFragment extends Fragment {
     private EnvVarsView createEnvVarsTab(final View view) {
         final Context context = view.getContext();
         final EnvVarsView envVarsView = view.findViewById(R.id.EnvVarsView);
-        envVarsView.setEnvVars(new EnvVars(isEditMode() ? container.getEnvVars() : Container.DEFAULT_ENV_VARS));
+        String initialEnvVars = isEditMode() ? container.getEnvVars()
+            : (GPUInformation.isAdreno(context) ? Container.DEFAULT_ENV_VARS : Container.DEFAULT_UNIVERSAL_ENV_VARS);
+        envVarsView.setEnvVars(new EnvVars(initialEnvVars));
         view.findViewById(R.id.BTAddEnvVar).setOnClickListener((v) -> (new AddEnvVarDialog(context, envVarsView)).show());
         return envVarsView;
     }
