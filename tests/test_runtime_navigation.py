@@ -47,7 +47,7 @@ class WineNavigationTest(unittest.TestCase):
         self.assertIn('proton-wine-11.0-2-x86_64.wcp.xz', source)
         self.assertIn('proton-wine-11.0-2-arm64ec.wcp.xz', source)
         self.assertIn("confirmDownload", source)
-        self.assertIn("Importar Wine", LAYOUT.read_text(encoding="utf-8"))
+        self.assertIn("Importar pacote Wine", LAYOUT.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
