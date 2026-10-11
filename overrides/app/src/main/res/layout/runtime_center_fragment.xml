@@ -77,19 +77,19 @@
                 android:id="@+id/BTDownloadProtonBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Baixar Proton Wine x86_64 • Box64"/>
             <Button
                 android:id="@+id/BTDownloadProtonFex"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Baixar Proton Wine ARM64EC • FEXCore"/>
             <Button
                 android:id="@+id/BTOpenProtonReleases"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Ver outras versões oficiais"/>
         </LinearLayout>
 
@@ -130,13 +130,13 @@
                 android:id="@+id/BTImportWine"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Importar Wine ou Proton baixado"/>
             <Button
                 android:id="@+id/BTAllWineSettings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Gerenciar versões Wine instaladas"/>
         </LinearLayout>
 
@@ -167,13 +167,13 @@
                 android:id="@+id/BTCreateWineContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Criar contêiner com Wine escolhido"/>
             <Button
                 android:id="@+id/BTRuntimeHelp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:allCaps="false"
+                android:textAllCaps="false"
                 android:text="Como escolher Wine, Box64 e FEXCore"/>
         </LinearLayout>
 
