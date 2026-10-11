@@ -362,7 +362,8 @@ def transform_wine_installer(src: str) -> str:
         src,
         'import com.winlator.MainActivity;\n',
         'import com.winlator.MainActivity;\n'
-        'import com.winlator.optimization.FexWineRuntime;\n',
+        'import com.winlator.optimization.FexWineRuntime;\n'
+        'import com.winlator.optimization.WineImportDiagnostics;\n',
         "WineInstaller preflight import",
     )
     src = replace_once(
@@ -395,6 +396,27 @@ def transform_wine_installer(src: str) -> str:
         '            guestProgramLauncherComponent.setExecutionBackend(FexWineRuntime.BACKEND_FEXCORE);\n'
         '        }\n',
         "WineInstaller probe native version",
+    )
+    src = replace_once(
+        src,
+        '            boolean success = TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, context, uri, destination);\n',
+        '            WineImportDiagnostics.clear();\n'
+        '            TarCompressorUtils.Type type = WineImportDiagnostics.detectFormat(context, uri);\n'
+        '            boolean success = type != null &&\n'
+        '                TarCompressorUtils.extractVerifiedWine(type, context, uri, destination);\n',
+        "WineInstaller safe XZ/ZSTD import",
+    )
+    src = replace_once(
+        src,
+        '            callback.call(wineInfoRef.get());\n'
+        '            ProcessHelper.removeDebugCallback(debugCallback);\n',
+        '            if (wineInfoRef.get() == null)\n'
+        '                WineImportDiagnostics.fail("O comando Wine --version falhou. "\n'
+        '                    + "Verifique se o Wine foi compilado para o ABI do Winlator e se "\n'
+        '                    + "suas bibliotecas Unix estão instaladas. A instalação não foi concluída.");\n'
+        '            callback.call(wineInfoRef.get());\n'
+        '            ProcessHelper.removeDebugCallback(debugCallback);\n',
+        "WineInstaller explain runtime probe failures",
     )
     return src
 
