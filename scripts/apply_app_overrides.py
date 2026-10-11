@@ -21,10 +21,15 @@ OVERLAY = ROOT / "overrides" / "app" / "src" / "main" / "java"
 GPU_FILE = Path("com/winlator/core/GPUHelper.java")
 CONTAINER_FILE = Path("com/winlator/ContainerDetailFragment.java")
 SHORTCUT_FILE = Path("com/winlator/contentdialog/ShortcutSettingsDialog.java")
+FRAME_RATING_FILE = Path("com/winlator/widget/FrameRating.java")
+DXVK_CONFIG_FILE = Path("com/winlator/contentdialog/DXVKConfigDialog.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
     Path("com/winlator/optimization/ProfileRules.java"),
+    Path("com/winlator/optimization/FrameTimeTracker.java"),
+    Path("com/winlator/optimization/ThermalAdvisor.java"),
+    Path("com/winlator/optimization/ConfigFilePolicy.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -95,6 +100,69 @@ def transform_shortcut(src: str) -> str:
     )
     return src
 
+
+def transform_frame_rating(src: str) -> str:
+    src = replace_once(
+        src, "import com.winlator.R;\n",
+        "import com.winlator.R;\n"
+        "import com.winlator.optimization.FrameTimeTracker;\n",
+        "FrameRating frametime import",
+    )
+    src = replace_once(
+        src, "    private float lastFPS = 0;\n",
+        "    private float lastFPS = 0;\n"
+        "    private final FrameTimeTracker frameTimes = new FrameTimeTracker(240);\n",
+        "FrameRating tracker member",
+    )
+    src = replace_once(
+        src, "    public void reset() {\n        frameCount = 0;\n",
+        "    public void reset() {\n        frameTimes.reset();\n        frameCount = 0;\n",
+        "FrameRating tracker reset",
+    )
+    src = replace_once(
+        src, "    public void update() {\n        long time = SystemClock.elapsedRealtime();\n",
+        "    public void update() {\n        if (mode == Mode.FULL) frameTimes.record(SystemClock.elapsedRealtimeNanos());\n"
+        "        long time = SystemClock.elapsedRealtime();\n",
+        "FrameRating track only full HUD",
+    )
+    src = replace_once(
+        src,
+        '        ((TextView)fpsPanel.getChildAt(1)).setText(String.format(Locale.ENGLISH, "%.1f", lastFPS));',
+        '        FrameTimeTracker.Stats stats = mode == Mode.FULL ? frameTimes.snapshot() : null;\n'
+        '        String fpsText = (stats != null && stats.samples >= 20)\n'
+        '            ? String.format(Locale.ENGLISH, "%.1f | update p95 %.1fms", lastFPS, stats.p95Ms)\n'
+        '            : String.format(Locale.ENGLISH, "%.1f", lastFPS);\n'
+        '        ((TextView)fpsPanel.getChildAt(1)).setText(fpsText);',
+        "FrameRating show update interval in FULL HUD",
+    )
+    return src
+
+def transform_dxvk_config(src: str) -> str:
+    src = replace_once(
+        src, "import com.winlator.R;\n",
+        "import com.winlator.R;\n"
+        "import com.winlator.optimization.ConfigFilePolicy;\n",
+        "DXVKConfigDialog import",
+    )
+    src = replace_once(
+        src,
+        '        FileUtils.delete(dxvkConfigFile);\n'
+        '        String content = getDXVKConfigContent(config);\n'
+        '        if (FileUtils.writeString(dxvkConfigFile, content)) {\n'
+        '            envVars.put("DXVK_CONFIG_FILE", RootFS.getDosUserConfigPath()+"\\\\dxvk.conf");\n'
+        '        }',
+        '        String content = getDXVKConfigContent(config);\n'
+        '        boolean exists = dxvkConfigFile.isFile();\n'
+        '        String current = exists ? FileUtils.readString(dxvkConfigFile) : "";\n'
+        '        boolean ready = !ConfigFilePolicy.needsWrite(exists, current, content)\n'
+        '            || FileUtils.writeString(dxvkConfigFile, content);\n'
+        '        if (ready) {\n'
+        '            envVars.put("DXVK_CONFIG_FILE", RootFS.getDosUserConfigPath()+"\\\\dxvk.conf");\n'
+        '        }',
+        "DXVKConfigDialog skip redundant file delete/write",
+    )
+    return src
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate without modifying files")
@@ -107,6 +175,8 @@ def main() -> int:
         GPU_FILE: transform_gpu,
         CONTAINER_FILE: transform_container,
         SHORTCUT_FILE: transform_shortcut,
+        FRAME_RATING_FILE: transform_frame_rating,
+        DXVK_CONFIG_FILE: transform_dxvk_config,
     }
     outputs = {}
 
