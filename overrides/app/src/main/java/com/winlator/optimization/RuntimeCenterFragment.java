@@ -51,6 +51,18 @@ public final class RuntimeCenterFragment extends Fragment {
             ((MainActivity)requireActivity()).getSupportActionBar().setTitle("Wine & Proton");
 
         root.findViewById(R.id.BTOpenProtonReleases).setOnClickListener(v -> open(RELEASES));
+        root.findViewById(R.id.BTLinuxWineSources).setOnClickListener(v ->
+            new AlertDialog.Builder(requireContext())
+                .setTitle("Wine e Proton Linux para Box64")
+                .setMessage("Kron4ek/Wine-Builds oferece builds Linux x86_64 de Wine, Staging "
+                    + "e Wine com patches Proton. Escolha um arquivo AMD64/WoW64 TAR XZ. "
+                    + "Essas builds usam Linux/glibc, mas ainda podem exigir bibliotecas "
+                    + "não presentes no Winlator. Confirme a arquitetura e faça a "
+                    + "importação em um novo contêiner.")
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Ver versões", (d,w) ->
+                    open("https://github.com/Kron4ek/Wine-Builds/releases"))
+                .show());
         root.findViewById(R.id.BTDownloadProtonBox).setOnClickListener(
             v -> confirmDownload("Proton Wine x86_64 (Bionic)", X86_WINE,
                 "Este pacote é para forks compatíveis com Android/Bionic (CMOD/Ludashi). O Winlator padrão usa Wine Linux/glibc e pode recusar a importação."));
