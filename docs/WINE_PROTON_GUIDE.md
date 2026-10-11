@@ -12,7 +12,7 @@ Nesta tela existem três sessões identificadas por número:
 2. **Instalar e gerenciar:** **Importar Wine ou Proton baixado** abre imediatamente o seletor de arquivos Android, usando a rotina original de instalação Wine do Winlator. **Gerenciar versões Wine instaladas** abre Configurações já focadas na seção Wine. O gerenciador lista as instalações locais e avisa se encontra módulos FEXCore.
 3. **Ativar para um jogo:** **Criar contêiner com Wine escolhido** abre a tela de novo contêiner, onde aparece o campo **Wine** depois de instalar uma versão adicional.
 
-Também é possível usar **☰ → Configurações** e rolar até **Wine**. Esse bloco estava escondido atrás de `DEBUG_MODE` no Winlator 11.2 e agora fica visível em builds de desenvolvimento e produção da branch.
+Também é possível usar **☰ → Configurações**. No topo da tela há um painel **Wine, Proton e compatibilidade**, com botões **Abrir Wine & Proton** e **Instalar Wine / Proton baixado**. A seção detalhada **Wine** continua no fim das configurações, mas agora fica visível sem depender de `DEBUG_MODE` (ela era escondida no Winlator 11.2).
 
 ## Escolher Box64 ou FEXCore
 
