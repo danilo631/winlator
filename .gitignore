@@ -1,0 +1,41 @@
+# Local editor and environment settings
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Temporary Android/Gradle build files (tracked upstream submodules remain untouched)
+.gradle/
+build/
+local.properties
+.cxx/
+.externalNativeBuild/
+captures/
+*.apk
+*.aab
+*.hprof
+
+# Local Wine/FEX archives and unpacked working distributions
+*.wcp
+*.wcp.xz
+*.tzst
+*.tar.xz
+*.tar.zst
+*.sha256.local
+dist/
+build-output/
+stage-arm64ec/
+stage-aarch64/
