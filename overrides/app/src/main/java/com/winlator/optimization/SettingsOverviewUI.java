@@ -47,26 +47,24 @@ public final class SettingsOverviewUI {
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(context, 18), dp(context, 16), dp(context, 18), dp(context, 16));
 
-        GradientDrawable background = new GradientDrawable(
-            GradientDrawable.Orientation.LEFT_RIGHT,
-            new int[]{Color.rgb(25, 54, 86), Color.rgb(23, 41, 64)});
-        background.setCornerRadius(dp(context, 18));
-        background.setStroke(dp(context, 1), Color.rgb(55, 94, 129));
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.rgb(26, 29, 34));
+        background.setCornerRadius(dp(context, 12));
+        background.setStroke(dp(context, 1), Color.rgb(48, 54, 63));
         panel.setBackground(background);
 
-        panel.addView(line(context, "WINLATOR ENHANCED  •  ACESSO RÁPIDO",
-            11, Color.rgb(125, 211, 252)));
-        panel.addView(line(context, "Wine, Proton e compatibilidade",
-            20, Color.WHITE));
+        panel.addView(line(context, "Acesso rápido",
+            12, Color.rgb(155, 165, 178)));
+        panel.addView(line(context, "Wine e Proton",
+            19, Color.WHITE));
         int count = WineInstaller.getInstalledWineInfos(context).size();
         panel.addView(line(context,
-            "Versões Wine detectadas: " + count
-                + "  •  Box64 padrão  •  FEXCore experimental",
+            "Wine instalado: " + count,
             12, Color.rgb(205, 220, 241)));
 
         Button center = new Button(context);
         center.setAllCaps(false);
-        center.setText("Abrir Wine & Proton");
+        center.setText("Gerenciar Wine");
         center.setOnClickListener(v ->
             ((MainActivity) context).showFragment(new RuntimeCenterFragment()));
         panel.addView(center, new LinearLayout.LayoutParams(
@@ -74,7 +72,7 @@ public final class SettingsOverviewUI {
 
         Button importWine = new Button(context);
         importWine.setAllCaps(false);
-        importWine.setText("Instalar Wine / Proton baixado");
+        importWine.setText("Importar pacote Wine");
         importWine.setOnClickListener(v -> {
             View originalPicker = settingsRoot.findViewById(R.id.BTInstallWine);
             if (originalPicker != null) originalPicker.performClick();
