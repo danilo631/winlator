@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B1220">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:padding="20dp"
+            android:background="@drawable/enhanced_hero"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="WINLATOR  •  ENHANCED"
+                android:letterSpacing="0.14"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#7DD3FC"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Sua biblioteca"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"/>
+
+            <TextView
+                android:id="@+id/TVLibrarySummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="Box64  •  FEXCore  •  Proton Wine"
+                android:textColor="#D6E6F6"
+                android:textSize="12sp"/>
+
+            <EditText
+                android:id="@+id/ETSearchContainers"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="16dp"
+                android:singleLine="true"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:hint="Buscar por jogo, GPU, Wine ou runtime"
+                android:textSize="13sp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#B9C5D8"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                android:background="@drawable/enhanced_search_field"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/RecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            android:scrollbars="vertical"
+            app:layoutManager="LinearLayoutManager" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/TVEmptyText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="170dp"
+        android:padding="24dp"
+        android:gravity="center"
+        android:text="Nenhum contêiner encontrado"
+        android:textColor="#BBC9E0"
+        android:textSize="18sp"
+        android:visibility="gone" />
+</FrameLayout>
