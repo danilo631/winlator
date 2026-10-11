@@ -129,6 +129,10 @@ public class ContainerDetailFragment extends Fragment {
 
         loadScreenSizeSpinner(view, isEditMode() ? container.getScreenSize() : Container.DEFAULT_SCREEN_SIZE);
 
+        // Explain the alternative render path only on detected Mali devices.
+        if (GPUInformation.isMali(context))
+            view.findViewById(R.id.TVMaliGraphicsHint).setVisibility(View.VISIBLE);
+
         final Spinner sGraphicsDriver = view.findViewById(R.id.SGraphicsDriver);
         final Spinner sDXWrapper = view.findViewById(R.id.SDXWrapper);
 
