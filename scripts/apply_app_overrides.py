@@ -756,6 +756,13 @@ def transform_app_gradle(src: str) -> str:
          "org.apache.commons:commons-compress:1.28.0"),
     ):
         src = replace_once(src, old, new, "App Gradle dependency " + old)
+    src = replace_once(
+        src,
+        "dependencies {\n",
+        "dependencies {\n"
+        "    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')\n",
+        "App Gradle Kotlin transitive stdlib alignment",
+    )
     return src
 
 
