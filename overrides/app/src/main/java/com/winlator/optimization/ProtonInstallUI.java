@@ -15,6 +15,8 @@ import com.winlator.SettingsFragment;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import com.winlator.xenvironment.RootFS;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class ProtonInstallUI {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
+    private static final ExecutorService WORK = Executors.newSingleThreadExecutor();
     private ProtonInstallUI() {}
 
     public static void attach(Fragment host, View root) {
@@ -31,6 +34,11 @@ public final class ProtonInstallUI {
     }
 
     private static void search(Fragment host) {
+        if (!RootFS.find(host.requireContext()).isValid()) {
+            message(host, "Instale os arquivos de sistema",
+                "Conclua a configuração inicial do Winlator antes de baixar Proton.");
+            return;
+        }
         if (!RUNNING.compareAndSet(false, true)) {
             message(host, "Operação em andamento", "Conclua o download atual antes de iniciar outro.");
             return;
@@ -40,7 +48,7 @@ public final class ProtonInstallUI {
         indicator.setIndeterminate(true);
         indicator.setCancelable(false);
         indicator.show();
-        Executors.newSingleThreadExecutor().execute(() -> {
+        WORK.execute(() -> {
             try {
                 ArrayList<ProtonReleaseClient.Asset> results = ProtonReleaseClient.catalog();
                 MAIN.post(() -> {
