@@ -25,13 +25,13 @@ O catálogo automático escolhe como ponto de partida builds **Linux/glibc** de 
 |---|---|---|
 | Instalação | Exigia navegador e seletor de arquivos, sem verificação de integridade | GitHub API → escolha → download → SHA-256 → importação Wine → prefixo |
 | Regressão de ABI | Pacotes Android/Bionic apresentavam erro genérico | Bloqueio explícito de auto-instalação de Bionic; diagnóstico do Wine extraído |
-| Libs de arquivos | AppCompat 1.4.0, Zstd JNI 1.5.2-3, XZ 1.7, Commons Compress 1.20 | AppCompat 1.7.1, Zstd JNI 1.5.7-13, XZ 1.10, Commons Compress 1.28.0 |
+| Libs de arquivos | AppCompat 1.4.0, Zstd JNI 1.5.2-3, XZ 1.7, Commons Compress 1.20 | AppCompat 1.7.1, Zstd JNI 1.5.7-3, XZ 1.10, Commons Compress 1.28.0 |
 | Pastas Wine | Diretórios temporários/incompletos podiam aparecer na lista de versões | Somente diretórios `wine-*` com `bin/wine` válido são incluídos |
 | Fluxo de download | Não existia cancelamento ou checagem de tamanho | Limites de tamanho, espaço livre, arquivo `.part`, hash, cancelamento, limpeza em falha |
 | Riscos TAR | O extrator geral do upstream não impunha checagem de caminhos | Extração Wine dedicada com limites e proteção de caminho e symlinks |
 | Interface | Botão de download abria release antigo no navegador | Pesquisa dinâmica dentro do app, com versões acessíveis e avisos de compatibilidade |
 
-**Decisão sobre dependências:** foram atualizados componentes Java do aplicativo relacionados ao fluxo e à descompactação, sem trocar o projeto NDK ou submódulos nativos. Atualizar Mesa, DXVK, Vortek, Box64, FEX e Wine de forma cega poderia introduzir regressões graves. Essas bibliotecas precisam de compilação, verificação de licença, ABI e execução específicas antes de entrar na `main`.
+**Compatibilidade Android:** a primeira tentativa com Zstd JNI 1.5.7-13 exigia compileSdk 37 e foi rejeitada pela CI. A dependência foi ajustada para 1.5.7-3 a fim de manter compileSdk 35 e evitar um salto não testado no toolchain nativo.\n\n**Decisão sobre dependências:** foram atualizados componentes Java do aplicativo relacionados ao fluxo e à descompactação, sem trocar o projeto NDK ou submódulos nativos. Atualizar Mesa, DXVK, Vortek, Box64, FEX e Wine de forma cega poderia introduzir regressões graves. Essas bibliotecas precisam de compilação, verificação de licença, ABI e execução específicas antes de entrar na `main`.
 
 ## Testes e limitações
 
