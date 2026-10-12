@@ -417,6 +417,16 @@ def transform_wine_installer(src: str) -> str:
     )
     src = replace_once(
         src,
+        '                if (name.startsWith("wine")) wineInfos.add(WineInfo.fromIdentifier(context, name));\n',
+        '                if (file.isDirectory() && name.startsWith("wine-")\n'
+        '                        && new File(file, "bin/wine").isFile()) {\n'
+        '                    WineInfo found = WineInfo.fromIdentifier(context, name);\n'
+        '                    if (found != WineInfo.MAIN_WINE_INFO) wineInfos.add(found);\n'
+        '                }\n',
+        "WineInstaller skip incomplete or invalid versions",
+    )
+    src = replace_once(
+        src,
         '            callback.call(wineInfoRef.get());\n'
         '            ProcessHelper.removeDebugCallback(debugCallback);\n',
         '            if (wineInfoRef.get() == null)\n'
