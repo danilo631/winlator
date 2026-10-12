@@ -54,6 +54,8 @@ NEW_FILES = (
     Path("com/winlator/optimization/NativeDriverPolicy.java"),
     Path("com/winlator/optimization/NativeDriverSettingsUI.java"),
     Path("com/winlator/optimization/WineManagerUI.java"),
+    Path("com/winlator/optimization/ReleaseAssetPolicy.java"),
+    Path("com/winlator/optimization/ProtonReleaseClient.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -597,6 +599,59 @@ def transform_settings_fragment(src: str) -> str:
         '            }\n'
         '        }\n',
         "SettingsFragment deep link: import Wine or focus Wine settings",
+    )
+    # Extract Wine once for either SAF selection or a verified automatic download.
+    # Keep the complete preflight / version parser from the pinned Winlator source.
+    begin = "    private void selectWineFileForInstall() {\n"
+    end = "    private void installWine(final WineInfo wineInfo) {\n"
+    if src.count(begin) != 1 or src.count(end) != 1:
+        raise ValueError("SettingsFragment Wine import method anchors changed")
+    first = src.index(begin)
+    last = src.index(end, first)
+    old = src[first:last]
+    body_start = "        selectWineFileCallback = (uri) -> {\n"
+    body_end = "        };\n\n        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);\n"
+    if old.count(body_start) != 1 or old.count(body_end) != 1:
+        raise ValueError("SettingsFragment Wine import callback changed")
+    start = old.index(body_start)+len(body_start)
+    stop = old.index(body_end)
+    extraction = old[start:stop]
+    extraction = extraction.replace(
+        'getActivity().runOnUiThread(() -> showWineInstallDialog(wineInfo));',
+        'getActivity().runOnUiThread(() -> {\n'
+        '                            if (automatic) installWine(wineInfo);\n'
+        '                            else showWineInstallDialog(wineInfo);\n'
+        '                        });')
+    if "if (automatic) installWine(wineInfo);" not in extraction:
+        raise ValueError("Unable to adapt Wine installation callback")
+    # Inner closure is reused; no automatic file picker, and no untrusted paths.
+    replaced = (
+        "    private void selectWineFileForInstall() {\n"
+        "        selectWineFileCallback = uri -> importWineUri(uri, false);\n"
+        + old[old.index("        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);"):]
+        + "    private void importWineUri(Uri uri, boolean automatic) {\n"
+        "        final Context context = getContext();\n"
+        + extraction
+        + "    }\n\n"
+    )
+    src = src[:first] + replaced + src[last:]
+    src = replace_once(
+        src,
+        '            boolean importWine = args.getBoolean("winlator_open_wine_import", false);\n',
+        '            String local = args.getString("winlator_verified_wine_file");\n'
+        '            if (local != null && savedInstanceState == null) {\n'
+        '                final File file = new File(local);\n'
+        '                final File cache = new File(requireContext().getCacheDir(), "wine-releases");\n'
+        '                try {\n'
+        '                    if (file.isFile() && file.getCanonicalFile().getParentFile()\n'
+        '                            .equals(cache.getCanonicalFile())\n'
+        '                            && file.getName().endsWith(".tar.xz"))\n'
+        '                        view.post(() -> { if (isAdded()) importWineUri(Uri.fromFile(file), true); });\n'
+        '                }\n'
+        '                catch (java.io.IOException ignored) {}\n'
+        '            }\n'
+        '            boolean importWine = args.getBoolean("winlator_open_wine_import", false);\n',
+        "SettingsFragment verified file-based automatic Wine import",
     )
     return src
 
