@@ -10,6 +10,9 @@ public final class NativeDriverPolicyTest {
         check(NativeDriverPolicy.classify("PowerVR Rogue") == NativeDriverPolicy.Family.POWERVR);
         check(NativeDriverPolicy.classify("Adreno (TM) 740") == NativeDriverPolicy.Family.ADRENO);
         check(NativeDriverPolicy.classify("") == NativeDriverPolicy.Family.OTHER);
+        check(NativeDriverPolicy.defaultVulkanDriver("Mali-G57", 0).equals("vortek"));
+        check(NativeDriverPolicy.defaultVulkanDriver("Adreno 740", 740).equals("turnip"));
+        check(NativeDriverPolicy.defaultVulkanDriver("Adreno 830", 830).equals("vortek"));
         check(NativeDriverPolicy.shouldPreferSystem("Mali-G57"));
         check(NativeDriverPolicy.needsVortek("Mali-G57", "turnip"));
         check(!NativeDriverPolicy.needsVortek("Mali-G57", "vortek"));
