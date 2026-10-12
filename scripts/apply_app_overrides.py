@@ -31,6 +31,7 @@ CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
 SETTINGS_FILE = Path("com/winlator/SettingsFragment.java")
 MAIN_ACTIVITY_FILE = Path("com/winlator/MainActivity.java")
 XSERVER_FILE = Path("com/winlator/XServerDisplayActivity.java")
+GRAPHICS_DRIVERS_FILE = Path("com/winlator/container/GraphicsDrivers.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -600,6 +601,24 @@ def transform_settings_fragment(src: str) -> str:
     return src
 
 
+def transform_graphics_drivers(src: str) -> str:
+    src = replace_once(
+        src,
+        'import com.winlator.core.GPUHelper;\n',
+        'import com.winlator.core.GPUHelper;\n'
+        'import com.winlator.optimization.NativeDriverPolicy;\n',
+        "GraphicsDrivers native default policy import",
+    )
+    src = replace_once(
+        src,
+        '        return GPUHelper.getAdrenoModelId(context) > 0 ? GraphicsDrivers.TURNIP+","+GraphicsDrivers.DEFAULT_OPENGL_DRIVER : GraphicsDrivers.VORTEK+","+GraphicsDrivers.DEFAULT_OPENGL_DRIVER;\n',
+        '        return NativeDriverPolicy.defaultVulkanDriver(GPUHelper.glGetRenderer(context),\n'
+        '            GPUHelper.getAdrenoModelId(context))+","+GraphicsDrivers.DEFAULT_OPENGL_DRIVER;\n',
+        "GraphicsDrivers native Vulkan on Mali / non-compatible Adreno",
+    )
+    return src
+
+
 def transform_xserver(src: str) -> str:
     src = replace_once(
         src,
@@ -677,6 +696,7 @@ def main() -> int:
         SETTINGS_FILE: transform_settings_fragment,
         MAIN_ACTIVITY_FILE: transform_main_activity,
         XSERVER_FILE: transform_xserver,
+        GRAPHICS_DRIVERS_FILE: transform_graphics_drivers,
     }
     outputs = {}
 
