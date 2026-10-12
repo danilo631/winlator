@@ -51,7 +51,6 @@ public final class ProtonInstallUI {
                     for (int i = 0; i < results.size(); i++) labels[i] = results.get(i).toString();
                     new AlertDialog.Builder(host.requireContext())
                         .setTitle("Wine e Proton para Box64")
-                        .setMessage("Pacotes Linux/glibc. Compatibilidade final depende do rootfs e bibliotecas Wine.")
                         .setItems(labels, (dialog, index) -> confirm(host, results.get(index)))
                         .setNegativeButton(android.R.string.cancel, null).show();
                 });
