@@ -51,6 +51,7 @@ public final class RuntimeCenterFragment extends Fragment {
         if (((MainActivity)requireActivity()).getSupportActionBar() != null)
             ((MainActivity)requireActivity()).getSupportActionBar().setTitle("Wine & Proton");
 
+        ProtonInstallUI.attach(this, root);
         root.findViewById(R.id.BTOpenProtonReleases).setOnClickListener(v -> open(RELEASES));
         root.findViewById(R.id.BTLinuxWineSources).setOnClickListener(v ->
             new AlertDialog.Builder(requireContext())
