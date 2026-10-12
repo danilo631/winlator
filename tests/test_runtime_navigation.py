@@ -28,6 +28,20 @@ class WineNavigationTest(unittest.TestCase):
         self.assertIn("BTCreateWineContainer", ids)
         self.assertIn("TVRuntimeInstalledWine", ids)
 
+    def test_automatic_installer_is_visible_and_reaches_wine_pipeline(self):
+        root = ET.parse(LAYOUT).getroot()
+        ids = {node.attrib.get(ANDROID + "id", "").split("/")[-1] for node in root.iter()}
+        self.assertIn("BTAutoInstallProton", ids)
+        launcher = (BASE / "overrides/app/src/main/java/com/winlator/optimization/ProtonInstallUI.java").read_text(encoding="utf-8")
+        client = (BASE / "overrides/app/src/main/java/com/winlator/optimization/ProtonReleaseClient.java").read_text(encoding="utf-8")
+        patcher = PATCHER.read_text(encoding="utf-8")
+        self.assertIn("ProtonInstallUI.attach(this, root)", JAVA.read_text(encoding="utf-8"))
+        self.assertIn("winlator_verified_wine_file", launcher)
+        self.assertIn("winlator_verified_wine_file", patcher)
+        self.assertIn("installWine(wineInfo)", patcher)
+        self.assertIn("SHA-256", client)
+        self.assertIn("commons-compress:1.28.0", patcher)
+
     def test_menu_navigation_is_present(self):
         items = ET.parse(MENU).getroot()
         ids = {
