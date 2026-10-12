@@ -57,8 +57,8 @@ public final class ReleaseAssetPolicy {
             if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getUserInfo() != null
                     || uri.getPort() != -1) return false;
             String host = uri.getHost();
-            return host != null && (host.equals("github.com")
-                || host.equals("release-assets.githubusercontent.com")
+            return host != null && (host.equals("release-assets.githubusercontent.com")
+                || host.equals("github-releases.githubusercontent.com")
                 || host.equals("objects.githubusercontent.com"));
         }
         catch (Exception ex) { return false; }
