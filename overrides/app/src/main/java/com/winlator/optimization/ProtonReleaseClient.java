@@ -99,6 +99,9 @@ public final class ProtonReleaseClient {
         File directory = new File(context.getCacheDir(), "wine-releases");
         if (!directory.isDirectory() && !directory.mkdirs())
             throw new IOException("Não foi possível preparar o cache de Wine.");
+        long free = directory.getUsableSpace();
+        if (free < asset.bytes * 2 + 128L * 1024 * 1024)
+            throw new IOException("Armazenamento insuficiente para baixar e extrair Wine.");
         File target = new File(directory, asset.filename);
         File partial = new File(directory, asset.filename + ".part");
         if (partial.exists() && !partial.delete())
