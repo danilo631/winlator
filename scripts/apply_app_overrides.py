@@ -56,6 +56,7 @@ NEW_FILES = (
     Path("com/winlator/optimization/WineManagerUI.java"),
     Path("com/winlator/optimization/ReleaseAssetPolicy.java"),
     Path("com/winlator/optimization/ProtonReleaseClient.java"),
+    Path("com/winlator/optimization/ProtonInstallUI.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -730,6 +731,21 @@ def transform_main_activity(src: str) -> str:
 
 
 
+def transform_app_gradle(src: str) -> str:
+    # Limit dependency bumps to broadly compatible Android compression/tooling APIs.
+    # Still compile with the original, pinned NDK and Gradle plugin.
+    for old, new in (
+        ("androidx.appcompat:appcompat:1.4.0", "androidx.appcompat:appcompat:1.7.1"),
+        ("com.github.luben:zstd-jni:1.5.2-3@aar",
+         "com.github.luben:zstd-jni:1.5.7-13@aar"),
+        ("org.tukaani:xz:1.7", "org.tukaani:xz:1.10"),
+        ("org.apache.commons:commons-compress:1.20",
+         "org.apache.commons:commons-compress:1.28.0"),
+    ):
+        src = replace_once(src, old, new, "App Gradle dependency " + old)
+    return src
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="validate without modifying files")
@@ -762,6 +778,11 @@ def main() -> int:
             raise RuntimeError(f"missing app source: {dest}")
         original = dest.read_text(encoding="utf-8")
         outputs[dest] = transform(original)
+
+    gradle_path = APP / "app" / "build.gradle"
+    if not gradle_path.is_file():
+        raise RuntimeError(f"missing upstream Gradle file: {gradle_path}")
+    outputs[gradle_path] = transform_app_gradle(gradle_path.read_text(encoding="utf-8"))
 
     for path in NEW_FILES:
         source = OVERLAY / path
