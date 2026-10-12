@@ -8,16 +8,13 @@ Fork experimental do [Winlator 11.2 original](https://github.com/brunodev85/winl
 
 > ⚠️ **Estado do projeto:** recursos desta branch ainda são experimentais e não foram validados em todos os dispositivos, especialmente GPUs Mali. Um APK compilado não comprova que jogos vão executar. Faça backup dos contêineres antes de instalar uma versão debug.
 
-## Onde encontrar Wine e Proton no aplicativo?
+## Instalação automatizada de Wine com patches Proton
 
-Nas versões Enhanced que incluem esta alteração, abra o menu lateral **☰ → Wine & Proton**. O gerenciador também está acessível pelo botão **Wine & Proton • Baixar, instalar e configurar** na biblioteca inicial.
+No aplicativo Enhanced, abra **☰ → Wine & Proton → Buscar e instalar Proton (GitHub)**. O app busca versões estáveis publicadas por [Kron4ek/Wine-Builds](https://github.com/Kron4ek/Wine-Builds/releases) para **Linux/glibc x86_64 WoW64**, permite escolher uma build e realiza o download em segundo plano com indicador de progresso. Confere origem, tamanho e **SHA-256 do release** antes de encaminhar automaticamente para extração, verificação e inicialização Wine do Winlator. A opção funciona sem abrir o navegador nem localizar o arquivo manualmente.
 
-1. **Baixar:** selecione `Proton Wine x86_64 • Box64` ou `Proton Wine ARM64EC • FEXCore`, ou veja [todos os releases oficiais GameNative](https://github.com/GameNative/proton-wine/releases). Os botões abrem o navegador para baixar um arquivo do tipo **Wine .wcp.xz**; não use `.wcp` (formato diferente) no importador XZ.
-2. **Instalar:** toque em **Importar Wine ou Proton baixado** e selecione o arquivo na pasta Downloads. O instalador tentará verificar o Wine e preparar o prefixo.
-3. **Selecionar:** clique em **Criar contêiner com Wine escolhido** e escolha a versão Wine no campo **Wine**. Na aba **Variáveis de ambiente**, selecione o backend adequado: **Box64** (x86_64) ou **FEXCore** (Wine Android ARM64EC preparado).
-4. **Gerenciar:** acesse **Wine & Proton → Gerenciar versões Wine instaladas** ou **☰ → Configurações → Wine**. A área Wine, escondida no Winlator 11.2 release, foi reabilitada. O Winlator mantém a versão de Wine de contêineres existentes para evitar corromper seus prefixos.
+Depois de instalar, as versões aparecem em **Wine & Proton → Instalados**. Toque na versão para ver os detalhes ou removê-la, desde que nenhum contêiner a utilize. Escolha a versão em um **novo** contêiner para evitar corromper o prefixo dos contêineres existentes.
 
-**Atenção:** não misture uma distribuição Bionic Wine com componentes glibc sem verificar compatibilidade. FEXCore ARM64EC exige as DLLs e bibliotecas Unix correspondentes e ainda pode falhar no rootfs do Winlator 11.2.
+As builds [GameNative/proton-wine](https://github.com/GameNative/proton-wine/releases) são voltadas ao **Android/Bionic**, e não são instaladas automaticamente nesse rootfs glibc. O instalador automático oferece exclusivamente builds Linux/glibc com hash verificável, porém a compatibilidade com as bibliotecas do rootfs **ainda deve ser testada no aparelho**. Saiba mais em [Proton automático v4](docs/AUTO_PROTON_V4.md).
 
 ## Instalar um APK experimental pelo GitHub
 
@@ -42,11 +39,11 @@ Em **Configurações → Acesso rápido**, o controle **Proteção automática d
 | Área | Estado |
 |---|---|
 | Biblioteca de contêineres, cartões e busca | Implementada no código; requer teste no aparelho |
-| Menu Wine & Proton com diagnósticos e seleção de arquivos | Implementado nesta branch |
+| Menu Wine & Proton, gerenciador direto e diagnósticos | Implementado; teste de uso no aparelho pendente |
 | Instalação de Wine x86_64 compatível | Usa o instalador do Winlator; depende da distribuição escolhida |
 | Box64 | Mantido como backend padrão |
 | FEXCore ARM64EC / Wine Android | Integração experimental com pré-verificações; não validada em jogo |
-| Proton Wine releases | Links oficiais e importação Wine Type TAR XZ; ABI não garantida |
+| Proton/Wine Linux WoW64 via GitHub | Pesquisa dinâmica, download SHA-256 e importação automática; ABI ainda não garantida |
 | Perfis ESYNC/NTsync e HUD com intervalos de atualização | Implementados; desempenho precisa ser medido |
 | APK debug | Gerado no GitHub Actions, sujeito ao resultado da branch |
 
@@ -68,7 +65,7 @@ winlator/
 └── android_alsa/
 ```
 
-Documentos de referência: [Central de guias](docs/README.md) • [Guia de Wine e Proton](docs/WINE_PROTON_GUIDE.md) • [Arquitetura](docs/ARCHITECTURE.md) • [Scripts](scripts/README.md) • [Roadmap](docs/ROADMAP.md).
+Documentos de referência: [Instalador automático](docs/AUTO_PROTON_V4.md) • [Central de guias](docs/README.md) • [Guia de Wine e Proton](docs/WINE_PROTON_GUIDE.md) • [Arquitetura](docs/ARCHITECTURE.md) • [Scripts](scripts/README.md) • [Roadmap](docs/ROADMAP.md).
 
 ## Desenvolver e compilar
 
