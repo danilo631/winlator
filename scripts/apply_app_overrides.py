@@ -605,6 +605,7 @@ def transform_xserver(src: str) -> str:
         src,
         "import com.winlator.container.GraphicsDrivers;\n",
         "import com.winlator.container.GraphicsDrivers;\n"
+        "import com.winlator.core.GPUHelper;\n"
         "import com.winlator.optimization.NativeDriverPolicy;\n"
         "import com.winlator.optimization.NativeDriverSettingsUI;\n",
         "XServer Vulkan safety imports",
