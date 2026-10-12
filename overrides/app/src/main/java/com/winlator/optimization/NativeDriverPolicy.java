@@ -19,6 +19,13 @@ public final class NativeDriverPolicy {
         return Family.OTHER;
     }
 
+    /** Conservative default: do not assume modern 8xx or unknown Adreno supports Turnip. */
+    public static String defaultVulkanDriver(String renderer, int adrenoModelId) {
+        return classify(renderer) == Family.ADRENO
+            && adrenoModelId >= 600 && adrenoModelId < 800
+            ? "turnip" : "vortek";
+    }
+
     /** Guard only confirmed non-Adreno GPUs, not unknown/emulated hardware. */
     public static boolean shouldPreferSystem(String renderer) {
         Family family = classify(renderer);
