@@ -22,12 +22,16 @@
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Carregando versões" android:textSize="13sp"
                 android:textColor="#B6BEC8" android:paddingBottom="8dp"/>
+            <LinearLayout android:id="@+id/LLInstalledWineActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
             <Button android:id="@+id/BTImportWine"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:text="Importar pacote Wine" android:textAllCaps="false"/>
             <Button android:id="@+id/BTAllWineSettings"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Gerenciar versões" android:textAllCaps="false"/>
+                android:text="Atualizar versões" android:textAllCaps="false"/>
         </LinearLayout>
 
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
