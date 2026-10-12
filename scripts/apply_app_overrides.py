@@ -30,6 +30,7 @@ TAR_UTILS_FILE = Path("com/winlator/core/TarCompressorUtils.java")
 CONTAINERS_FILE = Path("com/winlator/ContainersFragment.java")
 SETTINGS_FILE = Path("com/winlator/SettingsFragment.java")
 MAIN_ACTIVITY_FILE = Path("com/winlator/MainActivity.java")
+XSERVER_FILE = Path("com/winlator/XServerDisplayActivity.java")
 NEW_FILES = (
     Path("com/winlator/core/GPUProbe.java"),
     Path("com/winlator/optimization/GameProfileUI.java"),
@@ -49,6 +50,9 @@ NEW_FILES = (
     Path("com/winlator/optimization/WineImportPolicy.java"),
     Path("com/winlator/optimization/WineImportDiagnostics.java"),
     Path("com/winlator/optimization/RuntimeDiagnostics.java"),
+    Path("com/winlator/optimization/NativeDriverPolicy.java"),
+    Path("com/winlator/optimization/NativeDriverSettingsUI.java"),
+    Path("com/winlator/optimization/WineManagerUI.java"),
 )
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -596,6 +600,36 @@ def transform_settings_fragment(src: str) -> str:
     return src
 
 
+def transform_xserver(src: str) -> str:
+    src = replace_once(
+        src,
+        "import com.winlator.container.GraphicsDrivers;\n",
+        "import com.winlator.container.GraphicsDrivers;\n"
+        "import com.winlator.optimization.NativeDriverPolicy;\n"
+        "import com.winlator.optimization.NativeDriverSettingsUI;\n",
+        "XServer Vulkan safety imports",
+    )
+    src = replace_once(
+        src,
+        '            this.graphicsDriver = GraphicsDrivers.parseIdentifiers(graphicsDriver);\n'
+        '            this.graphicsDriverConfig = GraphicsDrivers.parseConfigs(graphicsDriver, graphicsDriverConfig);\n',
+        '            this.graphicsDriver = GraphicsDrivers.parseIdentifiers(graphicsDriver);\n'
+        '            this.graphicsDriverConfig = GraphicsDrivers.parseConfigs(graphicsDriver, graphicsDriverConfig);\n'
+        '            // Use the native Bionic Vulkan driver only via existing Vortek bridge.\n'
+        '            // Protect Mali/Xclipse/PowerVR from non-system Vulkan overrides.\n'
+        '            // This changes effective launch settings, not saved container settings.\n'
+        '            String renderer = GPUHelper.glGetRenderer(this);\n'
+        '            if (NativeDriverSettingsUI.guardEnabled(this)\n'
+        '                    && NativeDriverPolicy.shouldPreferSystem(renderer)) {\n'
+        '                if (NativeDriverPolicy.needsVortek(renderer, this.graphicsDriver[0]))\n'
+        '                    this.graphicsDriver[0] = GraphicsDrivers.VORTEK;\n'
+        '                this.graphicsDriverConfig[0].put("adrenotoolsDriver", "System");\n'
+        '            }\n',
+        "XServer native Vulkan guard after shortcut/container resolution",
+    )
+    return src
+
+
 def transform_main_activity(src: str) -> str:
     src = replace_once(
         src,
@@ -641,6 +675,7 @@ def main() -> int:
         CONTAINERS_FILE: transform_containers_list,
         SETTINGS_FILE: transform_settings_fragment,
         MAIN_ACTIVITY_FILE: transform_main_activity,
+        XSERVER_FILE: transform_xserver,
     }
     outputs = {}
 
