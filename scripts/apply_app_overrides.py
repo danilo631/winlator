@@ -750,7 +750,7 @@ def transform_app_gradle(src: str) -> str:
     for old, new in (
         ("androidx.appcompat:appcompat:1.4.0", "androidx.appcompat:appcompat:1.7.1"),
         ("com.github.luben:zstd-jni:1.5.2-3@aar",
-         "com.github.luben:zstd-jni:1.5.7-13@aar"),
+         "com.github.luben:zstd-jni:1.5.7-3@aar"),
         ("org.tukaani:xz:1.7", "org.tukaani:xz:1.10"),
         ("org.apache.commons:commons-compress:1.20",
          "org.apache.commons:commons-compress:1.28.0"),
