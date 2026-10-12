@@ -601,6 +601,9 @@ def transform_settings_fragment(src: str) -> str:
         '        }\n',
         "SettingsFragment deep link: import Wine or focus Wine settings",
     )
+    if "private void importWineUri(Uri uri, boolean automatic)" in src:
+        return src  # already transformed; preserve strict overlay idempotence
+
     # Extract Wine once for either SAF selection or a verified automatic download.
     # Keep the complete preflight / version parser from the pinned Winlator source.
     begin = "    private void selectWineFileForInstall() {\n"
