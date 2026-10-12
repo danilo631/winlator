@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feature/native-gpu-wine-management-v3
+      - feature/proton-auto-installer-security-11
       - feature/winlator-enhanced-profiles-11
       - feature/winlator-frame-pacing-cache-11
       - feature/fex-proton-runtime-integration-11
@@ -74,13 +75,15 @@ jobs:
             overrides/app/src/main/java/com/winlator/optimization/ProtonSyncRules.java \
             overrides/app/src/main/java/com/winlator/optimization/WineImportPolicy.java \
             overrides/app/src/main/java/com/winlator/optimization/NativeDriverPolicy.java \
+            overrides/app/src/main/java/com/winlator/optimization/ReleaseAssetPolicy.java \
             tests/ProfileRulesTest.java \
             tests/FrameTimeTrackerTest.java \
             tests/FexWineRuntimeTest.java \
             tests/LibraryFilterTest.java \
             tests/ProtonSyncRulesTest.java \
             tests/WineImportPolicyTest.java \
-            tests/NativeDriverPolicyTest.java
+            tests/NativeDriverPolicyTest.java \
+            tests/ReleaseAssetPolicyTest.java
           java -ea -cp /tmp/winlator-profile-tests ProfileRulesTest
           java -ea -cp /tmp/winlator-profile-tests FrameTimeTrackerTest
           java -ea -cp /tmp/winlator-profile-tests FexWineRuntimeTest
@@ -88,6 +91,7 @@ jobs:
           java -ea -cp /tmp/winlator-profile-tests ProtonSyncRulesTest
           java -ea -cp /tmp/winlator-profile-tests WineImportPolicyTest
           java -ea -cp /tmp/winlator-profile-tests NativeDriverPolicyTest
+          java -ea -cp /tmp/winlator-profile-tests ReleaseAssetPolicyTest
 
       - name: Test Proton Wine archive conversion
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
