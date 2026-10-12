@@ -85,6 +85,7 @@ public final class SettingsOverviewUI {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.bottomMargin = dp(context, 14);
+        NativeDriverSettingsUI.attach(context, panel);
         form.addView(panel, 0, params);
     }
 }
