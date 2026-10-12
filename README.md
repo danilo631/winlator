@@ -21,13 +21,21 @@ Nas versões Enhanced que incluem esta alteração, abra o menu lateral **☰ �
 
 ## Instalar um APK experimental pelo GitHub
 
-O código é construído automaticamente na branch **`feature/runtime-center-navigation-11`** em [GitHub Actions — Winlator Enhanced / Android](https://github.com/danilo631/winlator/actions/workflows/enhanced-android.yml).
+O desenvolvimento validado é compilado em **`main`** através de [GitHub Actions — Winlator Enhanced / Android](https://github.com/danilo631/winlator/actions/workflows/enhanced-android.yml). Confira a execução mais recente da `main` antes de instalar.
 
 1. Abra **Actions**, selecione o build mais recente da branch de gerenciamento Wine e verifique que **Verify overlays** e **Build Android debug APK** estejam verdes.
 2. Na parte inferior da execução, vá a **Artifacts → Winlator-Enhanced-11-debug**.
 3. Extraia o ZIP e instale o APK debug no Android, após guardar seus dados/contêineres. Um APK debug pode não atualizar diretamente uma versão release assinada de modo diferente.
 
-**A versão padrão do branch `main` não recebe alterações de branches experimentais automaticamente**. O novo menu não estará no APK do Winlator oficial ou em builds antigos do nosso fork.
+**Instale um APK Enhanced compilado da `main`.** O menu não aparece no Winlator oficial ou em APKs antigos.
+
+## Driver gráfico nativo para Mali, Xclipse e PowerVR
+
+O **Vortek**, já presente no Winlator, é a ponte Vulkan para o driver do Android. Este fork adiciona seleção conservadora de Vulkan e um guardião de inicialização: em GPUs Mali/Immortalis, Xclipse e PowerVR detectadas, a execução usa Vortek + driver **System** mesmo que um atalho antigo tenha definido Turnip ou outro driver externo. Isso não altera os dados gravados no contêiner.
+
+Em **Configurações → Acesso rápido**, o controle **Proteção automática do driver** permite desabilitar esse comportamento. GPUs desconhecidas preservam as configurações atuais. Não há root, ADB, overclock ou frequência de GPU forçada.
+
+**Gerenciar Wine de verdade:** abra **☰ → Wine & Proton → Instalados** e toque no botão de cada versão para ver informações ou removê-la, quando nenhum contêiner estiver usando aquele Wine. Não é necessário encontrar uma seção oculta de configurações. Veja [Driver nativo e gerenciamento Wine v3](docs/NATIVE_GPU_V3.md).
 
 ## Recursos em desenvolvimento
 
@@ -69,7 +77,7 @@ Dependências: Git com submódulos, Python 3.10+, JDK 17 e ferramentas Android S
 ```bash
 git clone --recurse-submodules https://github.com/danilo631/winlator.git
 cd winlator
-git checkout feature/runtime-center-navigation-11
+git checkout main
 git submodule update --init --recursive
 python3 scripts/apply_app_overrides.py --check
 python3 scripts/apply_app_overrides.py
