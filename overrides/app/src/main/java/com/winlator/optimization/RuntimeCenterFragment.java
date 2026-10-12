@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,7 +71,7 @@ public final class RuntimeCenterFragment extends Fragment {
             v -> confirmDownload("Proton Wine ARM64EC — FEXCore", ARM_WINE,
                 "Exige FEXCore compatível e bibliotecas Unix Android. O Wine x86_64 não substitui o ARM64EC."));
         root.findViewById(R.id.BTImportWine).setOnClickListener(v -> openSettings(true));
-        root.findViewById(R.id.BTAllWineSettings).setOnClickListener(v -> openSettings(false));
+        root.findViewById(R.id.BTAllWineSettings).setOnClickListener(v -> updateInstalledVersions(root));
         root.findViewById(R.id.BTCreateWineContainer).setOnClickListener(v -> {
             if (!RootFS.find(requireContext()).isValid()) {
                 message("Sistema ainda não instalado",
@@ -132,6 +133,8 @@ public final class RuntimeCenterFragment extends Fragment {
             else report.append("  —  integrado");
         }
         list.setText(report.length() == 0 ? "Nenhuma versão instalada" : report.toString());
+        LinearLayout actions = root.findViewById(R.id.LLInstalledWineActions);
+        WineManagerUI.render(requireContext(), actions, list);
     }
 
     private void confirmDownload(String name, String file, String requirement) {
